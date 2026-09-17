@@ -1,0 +1,21 @@
+{
+  "$schema": "https://pg-language-server.com/latest/schema.json",
+  "db": {
+    "host": "127.0.0.1",
+    "port": 54322,
+    "username": "postgres",
+    "password": "postgres",
+    "database": "postgres",
+    "allowStatementExecutionsAgainst": ["127.0.0.1/*", "localhost/*"],
+  },
+  "format": {
+    "enabled": true,
+    "lineWidth": 100,
+    "indentSize": 2,
+    "indentStyle": "tabs",
+    "keywordCase": "upper",
+    "constantCase": "upper",
+
+    "typeCase": "lower",
+  },
+}
