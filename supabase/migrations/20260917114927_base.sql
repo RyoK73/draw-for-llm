@@ -8,11 +8,12 @@ CREATE TABLE public.sketches (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
 -- Index
 CREATE INDEX ON public.sketches USING btree (user_id);
 
 -- Grant
-GRANT ALL ON TABLE public.sketches TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.sketches TO authenticated;
 
 -- RLS
 ALTER TABLE public.sketches
