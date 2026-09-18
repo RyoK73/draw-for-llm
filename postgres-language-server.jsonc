@@ -3,9 +3,9 @@
   "db": {
     "host": "127.0.0.1",
     "port": 54322,
-    "username": "postgres",
-    "password": "postgres",
-    "database": "postgres",
+    "username": "postgres", // This is the default value for the local development.
+    "password": "postgres", // This is the default value for the local development.
+    "database": "postgres", // This is the default value for the local development.
     "allowStatementExecutionsAgainst": ["127.0.0.1/*", "localhost/*"],
   },
   "format": {
