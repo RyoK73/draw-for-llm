@@ -16,7 +16,7 @@
     "db:push": "supabase db push",
     "db:pull": "supabase db pull",
     "db:new": "supabase migration new",
-    "type:gen": ". ./.env.local && supabase gen types typescript --project-id $PROJECTID --schema public > database.types.ts"
+    "type:gen": ". ./.env.local && supabase gen types typescript --project-id $PROJECTID --schema public > ./src/supabase/database.types.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
