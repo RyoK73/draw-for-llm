@@ -26,3 +26,20 @@ FOR ALL
 TO authenticated
 USING ((SELECT auth.uid()) = user_id)
 WITH CHECK ((SELECT auth.uid()) = user_id);
+
+-- Trigger
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $function$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END
+$function$;
+
+CREATE TRIGGER trg_set_updated_at
+BEFORE UPDATE
+ON public.sketches
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
