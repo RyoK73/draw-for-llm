@@ -1,0 +1,21 @@
+{
+  "$schema": "https://pg-language-server.com/latest/schema.json",
+  "db": {
+    "host": "127.0.0.1",
+    "port": 54322,
+    "username": "postgres", // This is the default value for the local development.
+    "password": "postgres", // This is the default value for the local development.
+    "database": "postgres", // This is the default value for the local development.
+    "allowStatementExecutionsAgainst": ["127.0.0.1/*", "localhost/*"],
+  },
+  "format": {
+    "enabled": true,
+    "lineWidth": 100,
+    "indentSize": 2,
+    "indentStyle": "tabs",
+    "keywordCase": "upper",
+    "constantCase": "upper",
+
+    "typeCase": "lower",
+  },
+}
