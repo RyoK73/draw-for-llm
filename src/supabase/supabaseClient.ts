@@ -1,9 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
+import { envSchema } from "@/supabase/handleDb.types";
 
-const supabaseCreateClient = createClient(
-  process.env.SUPABASE_URL ?? "http://127.0.0.1:54321", // This is for local development
-  process.env.SUPABASE_ANON_KEY ??
-    "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH", // This is for local development
-);
+const createClientComponentClient = () => {
+  const processEnv = envSchema.parse(process.env);
 
-export default { supabaseCreateClient };
+  return createClient(
+    processEnv.NEXT_PUBLIC_SUPABASE_URL,
+    processEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  );
+};
+
+export default createClientComponentClient;
