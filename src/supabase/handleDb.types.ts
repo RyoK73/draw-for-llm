@@ -7,4 +7,6 @@ const envSchema = z.object({
   PROJECTID: z.string(),
 });
 
-export { envSchema };
+type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
+
+export { envSchema, type Result };
