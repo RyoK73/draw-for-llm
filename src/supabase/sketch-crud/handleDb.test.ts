@@ -3,7 +3,7 @@ import {
   getFabricVersion,
   getSketchJson,
   insertSketch,
-} from "@/supabase/handleDb";
+} from "@/supabase/sketch-crud/handleDb";
 import pkg from "@/../package.json";
 import { createClient } from "@supabase/supabase-js";
 import createClientComponentClient from "@/supabase/supabaseClient";

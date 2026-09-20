@@ -1,6 +1,6 @@
-import { Database, type Json } from "@/supabase/database.types";
+import { Database } from "@/supabase/database.types";
 import { PostgrestError } from "@supabase/supabase-js";
-import { Result } from "@/supabase/handleDb.types";
+import { Result } from "@/supabase/sketch-crud/handleDb.types";
 import createClientComponentClient from "@/supabase/supabaseClient";
 import pkg from "@/../package.json";
 
