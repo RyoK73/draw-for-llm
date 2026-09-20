@@ -15,66 +15,158 @@ vi.mock("@/supabase/supabaseClient", () => ({
   default: vi.fn(),
 }));
 
-describe("getSketchJsons,insertSketch", () => {
-  test("getFabricVersion should return the fabric.js version", () => {
-    const fabricVersion = pkg.dependencies.fabric;
-    expect(getFabricVersion()).toEqual(fabricVersion);
-  });
+test("getFabricVersion should return the fabric.js version", () => {
+  const fabricVersion = pkg.dependencies.fabric;
+  expect(getFabricVersion()).toEqual(fabricVersion);
+});
 
-  it("should be able to save a Json", async () => {
-    const adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+describe("Fetch with admin Key", () => {
+  let adminClient: ReturnType<typeof createClient>;
+  let userId: string | undefined;
+  let sketchExample: Database["public"]["Tables"]["sketches"]["Insert"];
+
+  beforeEach(async () => {
+    // If process.env.* is missing,this test fails
+    adminClient = createClient(
+      process.env.SUPABASE_LOCAL_URL!,
       process.env.SUPABASE_LOCAL_ADMIN_KEY!,
       {
         auth: {
           autoRefreshToken: false,
           persistSession: false,
+          storageKey: `test-client${Date.now()}`,
         },
       },
     );
-
-    vi.mocked(createClientComponentClient).mockReturnValue(adminClient);
 
     const { data, error } = await adminClient.auth.admin.createUser({
       email: `${Date.now()}xxxx@test.com`,
       password: "xxxxxxxxx",
       email_confirm: true,
     });
-
     if (error) {
       consola.error(error);
     }
+    userId = data.user?.id;
 
-    const sketchExample: Database["public"]["Tables"]["sketches"]["Insert"] = {
+    sketchExample = {
       canvas_json: "test",
       title: "sketchExample",
       fabric_version: getFabricVersion(),
-      user_id: data.user?.id,
+      user_id: userId,
     };
+  });
 
-    const insertResult = await insertSketch(sketchExample);
+  describe("Is RLS working?", () => {
+    let anonClient: ReturnType<typeof createClient>;
+    let anonUserId: string | undefined;
+    beforeEach(async () => {
+      // If process.env.* is missing,this test fails
+      anonClient = createClient(
+        process.env.SUPABASE_LOCAL_URL!,
+        process.env.SUPABASE_LOCAL_ANON_KEY!,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+            storageKey: `test-client${Date.now()}`,
+          },
+        },
+      );
+    });
 
-    if (!insertResult.ok) {
-      throw new Error(insertResult.error?.message);
-    }
+    test("insertSketch should return an error when a client fetches by ANON_KEY", async () => {
+      vi.mocked(createClientComponentClient).mockReturnValue(anonClient);
 
-    expect(insertResult.ok).toBe(true);
+      const insertResult = await insertSketch(sketchExample);
 
-    expect(insertResult.value.canvas_json).toEqual(sketchExample.canvas_json);
+      expect(insertResult.ok).toBe(false);
+    });
+    test("getSketchJson should return an error when a client fetches by ANON_KEY", async () => {
+      vi.mocked(createClientComponentClient).mockReturnValueOnce(adminClient);
 
-    if (!insertResult.value.id) {
-      throw new Error(`Unexpected: id is undefined.`);
-    }
+      const insertResult = await insertSketch(sketchExample);
 
-    const getResult = await getSketchJson(insertResult.value.id);
+      if (!insertResult.ok) {
+        throw new Error(insertResult.error?.message);
+      }
 
-    if (!getResult.ok) {
-      throw new Error(getResult.error?.message);
-    }
+      expect(insertResult.ok).toBe(true);
 
-    expect(getResult.value).toEqual(sketchExample.canvas_json);
+      expect(insertResult.value.canvas_json).toEqual(sketchExample.canvas_json);
 
-    if (data.user) adminClient.auth.admin.deleteUser(data.user?.id);
+      if (!insertResult.value.id) {
+        throw new Error(`Unexpected: id is undefined.`);
+      }
+
+      vi.mocked(createClientComponentClient).mockReturnValueOnce(anonClient);
+
+      const getResult = await getSketchJson(insertResult.value.id);
+
+      expect(getResult.ok).toBe(false);
+    });
+
+    afterEach(() => {
+      if (anonUserId) anonClient.auth.admin.deleteUser(anonUserId);
+    });
+  });
+
+  describe("getSketchJsons and insertSketch", () => {
+    it("should be able to Insert a Json properly", async () => {
+      vi.mocked(createClientComponentClient).mockReturnValue(adminClient);
+
+      const insertResult = await insertSketch(sketchExample);
+
+      if (!insertResult.ok) {
+        throw new Error(insertResult.error?.message);
+      }
+
+      expect(insertResult.ok).toBe(true);
+
+      expect(insertResult.value.canvas_json).toEqual(sketchExample.canvas_json);
+
+      if (!insertResult.value.id) {
+        throw new Error(`Unexpected: id is undefined.`);
+      }
+
+      const getResult = await getSketchJson(insertResult.value.id);
+
+      if (!getResult.ok) {
+        throw new Error(getResult.error?.message);
+      }
+
+      expect(getResult.value).toEqual(sketchExample.canvas_json);
+    });
+
+    describe("getSketchJson", () => {
+      it("should throw an error when the id is wrong", async () => {
+        vi.mocked(createClientComponentClient).mockReturnValue(adminClient);
+
+        const insertResult = await insertSketch(sketchExample);
+
+        if (!insertResult.ok) {
+          throw new Error(insertResult.error?.message);
+        }
+
+        expect(insertResult.ok).toBe(true);
+
+        expect(insertResult.value.canvas_json).toEqual(
+          sketchExample.canvas_json,
+        );
+
+        if (!insertResult.value.id) {
+          throw new Error(`Unexpected: id is undefined.`);
+        }
+
+        const getResult = await getSketchJson("xxxxxxxxxxxxxxxx");
+
+        expect(getResult.ok).toBe(false);
+      });
+    });
+
+    afterEach(() => {
+      if (userId) adminClient.auth.admin.deleteUser(userId);
+    });
   });
 });
 
