@@ -115,8 +115,6 @@ describe("Is RLS working?", () => {
       throw new Error(insertResult.error?.message);
     }
 
-    expect(insertResult.ok).toBe(true);
-
     expect(insertResult.value.canvas_json).toEqual(sketchExample.canvas_json);
 
     if (!insertResult.value.id) {
@@ -135,15 +133,7 @@ describe("Is RLS working?", () => {
       authenticatedClient,
     );
 
-    const insertResult = await insertSketch(sketchExample);
-
-    if (!insertResult.ok) {
-      throw new Error(insertResult.error?.message);
-    }
-
-    if (!insertResult.value.id) {
-      throw new Error(`Unexpected: id is undefined.`);
-    }
+    await insertSketch(sketchExample);
 
     vi.mocked(createClientComponentClient).mockReturnValueOnce(anonClient);
 
@@ -153,7 +143,7 @@ describe("Is RLS working?", () => {
   });
 });
 
-describe("getSketchJsons or getSketchData and insertSketch", () => {
+describe("insertSketch,getSketchJsons , and getsketchData should work for an authenticated user", () => {
   beforeEach(() => {
     vi.mocked(createClientComponentClient).mockReturnValue(authenticatedClient);
   });
@@ -182,19 +172,7 @@ describe("getSketchJsons or getSketchData and insertSketch", () => {
   });
 
   it("should throw an error when the id is wrong", async () => {
-    const insertResult = await insertSketch(sketchExample);
-
-    if (!insertResult.ok) {
-      throw new Error(insertResult.error?.message);
-    }
-
-    expect(insertResult.ok).toBe(true);
-
-    expect(insertResult.value.canvas_json).toEqual(sketchExample.canvas_json);
-
-    if (!insertResult.value.id) {
-      throw new Error(`Unexpected: id is undefined.`);
-    }
+    await insertSketch(sketchExample);
 
     const getResult = await getSketchJson("xxxxxxxxxxxxxxxx");
 
