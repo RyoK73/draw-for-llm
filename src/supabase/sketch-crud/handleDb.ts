@@ -5,9 +5,6 @@ import {
   GetSketchData,
 } from "@/supabase/sketch-crud/handleDb.types";
 import createBrowerClient from "@/supabase/supabaseClient";
-import pkg from "@/../package.json";
-
-const getFabricVersion = (): string => pkg.dependencies.fabric;
 
 // Get the json data from the sketch table.
 const getSketchJson = async (
@@ -66,4 +63,4 @@ const getSketchData = async (
   return { ok: true, value: data };
 };
 
-export { getFabricVersion, getSketchJson, insertSketch, getSketchData };
+export { getSketchJson, insertSketch, getSketchData };

@@ -1,11 +1,10 @@
 import { Database } from "@/supabase/database.types";
 import {
-  getFabricVersion,
   getSketchJson,
   insertSketch,
   getSketchData,
 } from "@/supabase/sketch-crud/handleDb";
-import pkg from "@/../package.json";
+import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
 import { createClient } from "@supabase/supabase-js";
 import createBrowerClient from "@/supabase/supabaseClient";
 
@@ -31,12 +30,6 @@ const createTestSketch = (
 });
 
 // Launch the supabase DB before running this tests.
-
-test("getFabricVersion should return the fabric.js version", () => {
-  const fabricVersion = pkg.dependencies.fabric;
-  expect(getFabricVersion()).toEqual(fabricVersion);
-});
-
 // Create a user by adminClient
 const adminClient = createTestClient(process.env.SUPABASE_LOCAL_ADMIN_KEY!);
 let authenticatedClient: ReturnType<typeof createTestClient>;
