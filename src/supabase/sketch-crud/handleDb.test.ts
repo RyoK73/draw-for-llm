@@ -132,7 +132,7 @@ describe("Is RLS working?", () => {
   });
 });
 
-describe("insertSketch,getSketchJsons , and getsketchData should work for an authenticated user", () => {
+describe("insertSketch,getSketchJson , and getSketchData should work for an authenticated user", () => {
   beforeEach(() => {
     vi.mocked(createBrowerClient).mockReturnValue(authenticatedClient);
   });
