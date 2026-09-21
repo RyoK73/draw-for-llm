@@ -3,11 +3,11 @@ import {
   getFabricVersion,
   getSketchJson,
   insertSketch,
+  getSketchData,
 } from "@/supabase/sketch-crud/handleDb";
 import pkg from "@/../package.json";
 import { createClient } from "@supabase/supabase-js";
 import createClientComponentClient from "@/supabase/supabaseClient";
-import consola from "consola";
 
 // helper function
 const createTestClient = (key: string): ReturnType<typeof createClient> => {
@@ -20,6 +20,16 @@ const createTestClient = (key: string): ReturnType<typeof createClient> => {
   });
 };
 
+const createTestSketch = (
+  userId: string | undefined,
+): Database["public"]["Tables"]["sketches"]["Insert"] => ({
+  canvas_json: "test",
+  description: "this is test",
+  title: "sketchExample",
+  fabric_version: getFabricVersion(),
+  user_id: userId,
+});
+
 // Launch the supabase DB before running this tests.
 
 test("getFabricVersion should return the fabric.js version", () => {
@@ -27,31 +37,56 @@ test("getFabricVersion should return the fabric.js version", () => {
   expect(getFabricVersion()).toEqual(fabricVersion);
 });
 
-let adminClient: ReturnType<typeof createClient>;
-let userId: string | undefined;
+// Create a user by adminClient
+const adminClient = createTestClient(process.env.SUPABASE_LOCAL_ADMIN_KEY!);
+let authenticatedClient: ReturnType<typeof createTestClient>;
+let createdUserId: string | undefined;
 let sketchExample: Database["public"]["Tables"]["sketches"]["Insert"];
 
 beforeEach(async () => {
-  // If process.env.* is missing,this test fails
-  adminClient = createTestClient(process.env.SUPABASE_LOCAL_ADMIN_KEY!);
+  const email: string = `${Date.now()}xxxx@test.com`;
+  const password: string = "xxxxxxxxx";
 
-  const { data, error } = await adminClient.auth.admin.createUser({
-    email: `${Date.now()}xxxx@test.com`,
-    password: "xxxxxxxxx",
-    email_confirm: true,
-  });
+  const { data: _, error: createdUserError } =
+    await adminClient.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true,
+    });
 
-  if (error) {
-    consola.error(error);
+  if (createdUserError) {
+    throw new Error(createdUserError.message);
   }
 
-  userId = data.user?.id;
-  sketchExample = {
-    canvas_json: "test",
-    title: "sketchExample",
-    fabric_version: getFabricVersion(),
-    user_id: userId,
-  };
+  // Create an authenticatedClient
+  authenticatedClient = createTestClient(process.env.SUPABASE_LOCAL_ANON_KEY!);
+
+  // Grant authenticated role to authenticatedClient
+  const { data: signInData, error: signInError } =
+    await authenticatedClient.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+  if (signInError) {
+    throw new Error(signInError.message);
+  }
+
+  createdUserId = signInData.user.id;
+
+  sketchExample = createTestSketch(createdUserId);
+});
+
+afterEach(async () => {
+  vi.resetAllMocks();
+  if (createdUserId) {
+    await authenticatedClient
+      .from("sketches")
+      .delete()
+      .eq("user_id", createdUserId);
+    const { error } = await adminClient.auth.admin.deleteUser(createdUserId);
+    if (error) console.log(error);
+  }
 });
 
 vi.mock("@/supabase/supabaseClient", () => ({
@@ -59,11 +94,7 @@ vi.mock("@/supabase/supabaseClient", () => ({
 }));
 
 describe("Is RLS working?", () => {
-  let anonClient: ReturnType<typeof createClient>;
-  beforeEach(async () => {
-    // If process.env.* is missing,this test fails
-    anonClient = createTestClient(process.env.SUPABASE_LOCAL_ANON_KEY!);
-  });
+  const anonClient = createTestClient(process.env.SUPABASE_LOCAL_ANON_KEY!);
 
   test("insertSketch should return an error when a client fetches by ANON_KEY", async () => {
     vi.mocked(createClientComponentClient).mockReturnValue(anonClient);
@@ -74,7 +105,9 @@ describe("Is RLS working?", () => {
   });
 
   test("getSketchJson should return an error when a client fetches by ANON_KEY", async () => {
-    vi.mocked(createClientComponentClient).mockReturnValueOnce(adminClient);
+    vi.mocked(createClientComponentClient).mockReturnValueOnce(
+      authenticatedClient,
+    );
 
     const insertResult = await insertSketch(sketchExample);
 
@@ -98,10 +131,11 @@ describe("Is RLS working?", () => {
   });
 });
 
-describe("getSketchJsons and insertSketch", () => {
+describe("getSketchJsons or getSketchData and insertSketch", () => {
+  beforeEach(() => {
+    vi.mocked(createClientComponentClient).mockReturnValue(authenticatedClient);
+  });
   it("should be able to Insert a Json and get a Json that inserted", async () => {
-    vi.mocked(createClientComponentClient).mockReturnValue(adminClient);
-
     const insertResult = await insertSketch(sketchExample);
 
     if (!insertResult.ok) {
@@ -126,8 +160,6 @@ describe("getSketchJsons and insertSketch", () => {
   });
 
   it("should throw an error when the id is wrong", async () => {
-    vi.mocked(createClientComponentClient).mockReturnValue(adminClient);
-
     const insertResult = await insertSketch(sketchExample);
 
     if (!insertResult.ok) {
@@ -146,9 +178,5 @@ describe("getSketchJsons and insertSketch", () => {
 
     expect(getResult.ok).toBe(false);
   });
-});
 
-afterEach(() => {
-  vi.resetAllMocks();
-  if (userId) adminClient.auth.admin.deleteUser(userId);
 });
