@@ -7,7 +7,7 @@ import {
 } from "@/supabase/sketch-crud/handleDb";
 import pkg from "@/../package.json";
 import { createClient } from "@supabase/supabase-js";
-import createClientComponentClient from "@/supabase/supabaseClient";
+import createBrowerClient from "@/supabase/supabaseClient";
 
 // helper function
 const createTestClient = (key: string): ReturnType<typeof createClient> => {
@@ -97,7 +97,7 @@ describe("Is RLS working?", () => {
   const anonClient = createTestClient(process.env.SUPABASE_LOCAL_ANON_KEY!);
 
   test("insertSketch should return an error when a client fetches by ANON_KEY", async () => {
-    vi.mocked(createClientComponentClient).mockReturnValue(anonClient);
+    vi.mocked(createBrowerClient).mockReturnValue(anonClient);
 
     const insertResult = await insertSketch(sketchExample);
 
@@ -105,9 +105,7 @@ describe("Is RLS working?", () => {
   });
 
   test("getSketchJson should return an error when a client fetches by ANON_KEY", async () => {
-    vi.mocked(createClientComponentClient).mockReturnValueOnce(
-      authenticatedClient,
-    );
+    vi.mocked(createBrowerClient).mockReturnValueOnce(authenticatedClient);
 
     const insertResult = await insertSketch(sketchExample);
 
@@ -121,7 +119,7 @@ describe("Is RLS working?", () => {
       throw new Error(`Unexpected: id is undefined.`);
     }
 
-    vi.mocked(createClientComponentClient).mockReturnValueOnce(anonClient);
+    vi.mocked(createBrowerClient).mockReturnValueOnce(anonClient);
 
     const getResult = await getSketchJson(insertResult.value.id);
 
@@ -129,13 +127,11 @@ describe("Is RLS working?", () => {
   });
 
   test("getSketchData should return an error when a client fetches by ANON_KEY", async () => {
-    vi.mocked(createClientComponentClient).mockReturnValueOnce(
-      authenticatedClient,
-    );
+    vi.mocked(createBrowerClient).mockReturnValueOnce(authenticatedClient);
 
     await insertSketch(sketchExample);
 
-    vi.mocked(createClientComponentClient).mockReturnValueOnce(anonClient);
+    vi.mocked(createBrowerClient).mockReturnValueOnce(anonClient);
 
     const getResult = await getSketchData();
 
@@ -145,7 +141,7 @@ describe("Is RLS working?", () => {
 
 describe("insertSketch,getSketchJsons , and getsketchData should work for an authenticated user", () => {
   beforeEach(() => {
-    vi.mocked(createClientComponentClient).mockReturnValue(authenticatedClient);
+    vi.mocked(createBrowerClient).mockReturnValue(authenticatedClient);
   });
   it("should be able to Insert a Json and get a Json that inserted", async () => {
     const insertResult = await insertSketch(sketchExample);

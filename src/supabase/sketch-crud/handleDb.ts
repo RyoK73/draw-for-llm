@@ -6,7 +6,7 @@ import {
   InsertSketch,
   GetSketchData,
 } from "@/supabase/sketch-crud/handleDb.types";
-import createClientComponentClient from "@/supabase/supabaseClient";
+import createBrowerClient from "@/supabase/supabaseClient";
 import pkg from "@/../package.json";
 
 const getFabricVersion = (): string => pkg.dependencies.fabric;
@@ -15,7 +15,7 @@ const getFabricVersion = (): string => pkg.dependencies.fabric;
 const getSketchJson = async (
   id: string,
 ): Promise<Result<GetSketchJson, Error>> => {
-  const supabaseClient = createClientComponentClient();
+  const supabaseClient = createBrowerClient();
   const { data, error } = await supabaseClient
     .from("sketches")
     .select("canvas_json")
@@ -32,7 +32,7 @@ const getSketchJson = async (
 const insertSketch = async (
   sketch: InsertSketch,
 ): Promise<Result<InsertSketch, Error>> => {
-  const supabaseClient = createClientComponentClient();
+  const supabaseClient = createBrowerClient();
   const { data, error } = await supabaseClient
     .from("sketches")
     .insert(sketch)
@@ -56,7 +56,7 @@ const insertSketch = async (
 const getSketchData = async (
   dataLimit: number = 10,
 ): Promise<Result<GetSketchData, Error>> => {
-  const supabaseClient = createClientComponentClient();
+  const supabaseClient = createBrowerClient();
   const { data, error } = await supabaseClient
     .from("sketches")
     .select("id,title,description,created_at")
