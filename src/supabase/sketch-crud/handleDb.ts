@@ -1,5 +1,3 @@
-import { Database } from "@/supabase/database.types";
-import { PostgrestError } from "@supabase/supabase-js";
 import {
   Result,
   GetSketchJson,
