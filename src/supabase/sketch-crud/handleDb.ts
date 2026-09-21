@@ -57,4 +57,27 @@ const insertSketch = async (
   return { ok: true, value: data[0] };
 };
 
-export { getFabricVersion, getSketchJson, insertSketch };
+type sketchDataResult = {
+  data: Pick<
+    Database["public"]["Tables"]["sketches"]["Row"],
+    "id" | "title" | "description" | "created_at"
+  >[];
+  error: Error;
+};
+
+const getSketchData = async (
+  dataLimit: number = 10,
+): Promise<Result<sketchDataResult["data"], sketchDataResult["error"]>> => {
+  const supabaseClient = createClientComponentClient();
+  const { data, error } = await supabaseClient
+    .from("sketches")
+    .select("id,title,description,created_at")
+    .limit(dataLimit);
+
+  if (error) {
+    return { ok: false, error: error };
+  }
+  return { ok: true, value: data };
+};
+
+export { getFabricVersion, getSketchJson, insertSketch, getSketchData };

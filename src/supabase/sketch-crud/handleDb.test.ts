@@ -129,6 +129,28 @@ describe("Is RLS working?", () => {
 
     expect(getResult.ok).toBe(false);
   });
+
+  test("getSketchData should return an error when a client fetches by ANON_KEY", async () => {
+    vi.mocked(createClientComponentClient).mockReturnValueOnce(
+      authenticatedClient,
+    );
+
+    const insertResult = await insertSketch(sketchExample);
+
+    if (!insertResult.ok) {
+      throw new Error(insertResult.error?.message);
+    }
+
+    if (!insertResult.value.id) {
+      throw new Error(`Unexpected: id is undefined.`);
+    }
+
+    vi.mocked(createClientComponentClient).mockReturnValueOnce(anonClient);
+
+    const getResult = await getSketchData();
+
+    expect(getResult.ok).toBe(false);
+  });
 });
 
 describe("getSketchJsons or getSketchData and insertSketch", () => {
@@ -179,4 +201,24 @@ describe("getSketchJsons or getSketchData and insertSketch", () => {
     expect(getResult.ok).toBe(false);
   });
 
+  test("getSketchData should return { id, title, description, created_at }[]", async () => {
+    const sketches = [sketchExample, sketchExample];
+
+    const insertResults = sketches.map(
+      async (sketch) => await insertSketch(sketch),
+    );
+
+    await Promise.all(insertResults);
+
+    const sketchData = await getSketchData();
+
+    expect(sketchData.ok).toBe(true);
+    if (sketchData.ok) {
+      sketchData.value.map((data, index) => {
+        const { canvas_json, fabric_version, user_id, ...newSketch } =
+          sketches[index];
+        expect(data).toMatchObject(newSketch);
+      });
+    }
+  });
 });
