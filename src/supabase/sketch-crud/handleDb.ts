@@ -1,20 +1,20 @@
 import { Database } from "@/supabase/database.types";
 import { PostgrestError } from "@supabase/supabase-js";
-import { Result } from "@/supabase/sketch-crud/handleDb.types";
+import {
+  Result,
+  GetSketchJson,
+  InsertSketch,
+  GetSketchData,
+} from "@/supabase/sketch-crud/handleDb.types";
 import createClientComponentClient from "@/supabase/supabaseClient";
 import pkg from "@/../package.json";
 
 const getFabricVersion = (): string => pkg.dependencies.fabric;
 
-// Get the json data from sketch table.
-type GetSketchResult = {
-  data: Database["public"]["Tables"]["sketches"]["Row"]["canvas_json"];
-  error: PostgrestError;
-};
-
+// Get the json data from the sketch table.
 const getSketchJson = async (
   id: string,
-): Promise<Result<GetSketchResult["data"], GetSketchResult["error"]>> => {
+): Promise<Result<GetSketchJson, Error>> => {
   const supabaseClient = createClientComponentClient();
   const { data, error } = await supabaseClient
     .from("sketches")
@@ -28,15 +28,10 @@ const getSketchJson = async (
   return { ok: true, value: data.canvas_json };
 };
 
-// Insert the json data to sketch table.
-type insertSketchResult = {
-  data: Database["public"]["Tables"]["sketches"]["Insert"];
-  error: Error;
-};
-
+// Insert the json data to the sketch table.
 const insertSketch = async (
-  sketch: insertSketchResult["data"],
-): Promise<Result<insertSketchResult["data"], insertSketchResult["error"]>> => {
+  sketch: InsertSketch,
+): Promise<Result<InsertSketch, Error>> => {
   const supabaseClient = createClientComponentClient();
   const { data, error } = await supabaseClient
     .from("sketches")
@@ -57,17 +52,10 @@ const insertSketch = async (
   return { ok: true, value: data[0] };
 };
 
-type sketchDataResult = {
-  data: Pick<
-    Database["public"]["Tables"]["sketches"]["Row"],
-    "id" | "title" | "description" | "created_at"
-  >[];
-  error: Error;
-};
-
+// Get the data from the sketch table to specify the canvas_json.
 const getSketchData = async (
   dataLimit: number = 10,
-): Promise<Result<sketchDataResult["data"], sketchDataResult["error"]>> => {
+): Promise<Result<GetSketchData, Error>> => {
   const supabaseClient = createClientComponentClient();
   const { data, error } = await supabaseClient
     .from("sketches")
