@@ -12,6 +12,7 @@
     "db:version": "supabase --version",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
     "db:status": "supabase status",
     "db:push": "supabase db push",
     "db:pull": "supabase db pull",
