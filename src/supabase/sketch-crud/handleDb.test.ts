@@ -7,17 +7,10 @@ import {
 import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseBrowserClient } from "@/supabase/browserClient";
+import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
 
-// helper function
-const createTestClient = (key: string): ReturnType<typeof createClient> => {
-  return createClient(process.env.SUPABASE_LOCAL_URL!, key, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      storageKey: `test-client${Date.now()}`,
-    },
-  });
-};
+const { createAnonClient, createTestUser, deleteTestUser } =
+  supabaseTestHelper();
 
 const createTestSketch = (
   userId: string | undefined,
@@ -30,42 +23,19 @@ const createTestSketch = (
 });
 
 // Launch the supabase DB before running this tests.
-// Create a user by adminClient
-const adminClient = createTestClient(process.env.SUPABASE_LOCAL_ADMIN_KEY!);
-let authenticatedClient: ReturnType<typeof createTestClient>;
+let authenticatedClient: ReturnType<typeof createClient>;
 let createdUserId: string | undefined;
 let sketchExample: Database["public"]["Tables"]["sketches"]["Insert"];
 
 beforeEach(async () => {
-  const email: string = `${Date.now()}xxxx@test.com`;
-  const password: string = "xxxxxxxxx";
+  const createdUserResult = await createTestUser();
 
-  const { data: _, error: createdUserError } =
-    await adminClient.auth.admin.createUser({
-      email: email,
-      password: password,
-      email_confirm: true,
-    });
-
-  if (createdUserError) {
-    throw new Error(createdUserError.message);
+  if (!createdUserResult.ok) {
+    throw new Error(createdUserResult.error.message);
   }
 
-  // Create an authenticatedClient
-  authenticatedClient = createTestClient(process.env.SUPABASE_LOCAL_ANON_KEY!);
-
-  // Grant authenticated role to authenticatedClient
-  const { data: signInData, error: signInError } =
-    await authenticatedClient.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
-  if (signInError) {
-    throw new Error(signInError.message);
-  }
-
-  createdUserId = signInData.user.id;
+  authenticatedClient = createdUserResult.value.authenticatedClient;
+  createdUserId = createdUserResult.value.createdUserId;
 
   sketchExample = createTestSketch(createdUserId);
 });
@@ -77,8 +47,8 @@ afterEach(async () => {
       .from("sketches")
       .delete()
       .eq("user_id", createdUserId);
-    const { error } = await adminClient.auth.admin.deleteUser(createdUserId);
-    if (error) console.log(error);
+    const deleteResult = await deleteTestUser(createdUserId);
+    if (!deleteResult.ok) console.log(deleteResult.error);
   }
 });
 
@@ -87,7 +57,7 @@ vi.mock("@/supabase/browserClient", () => ({
 }));
 
 describe("Is RLS working?", () => {
-  const anonClient = createTestClient(process.env.SUPABASE_LOCAL_ANON_KEY!);
+  const anonClient = createAnonClient();
 
   test("insertSketch should return an error when a client fetches by ANON_KEY", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(anonClient);
