@@ -1,4 +1,4 @@
-import { Database } from "@/supabase/database.types";
+import { Database } from "@/supabase/utils/database.types";
 import {
   getSketchJson,
   insertSketch,
@@ -6,7 +6,7 @@ import {
 } from "@/supabase/sketch-crud/handleDb";
 import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
 import { createClient } from "@supabase/supabase-js";
-import { createSupabaseBrowserClient } from "@/supabase/browserClient";
+import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
 
 const { createAnonClient, createTestUser, deleteTestUser } =
@@ -52,7 +52,7 @@ afterEach(async () => {
   }
 });
 
-vi.mock("@/supabase/browserClient", () => ({
+vi.mock("@/supabase/utils/browserClient", () => ({
   createSupabaseBrowserClient: vi.fn(),
 }));
 

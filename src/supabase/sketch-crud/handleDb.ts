@@ -4,12 +4,10 @@ import {
   GetSketchData,
 } from "@/supabase/sketch-crud/handleDb.types";
 import { Result } from "@/utils/utility.types";
-import { createSupabaseBrowserClient } from "@/supabase/browserClient";
+import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 
 // Get the json data from the sketch table.
-const getSketchJson = async (
-  id: string,
-): Promise<Result<GetSketchJson>> => {
+const getSketchJson = async (id: string): Promise<Result<GetSketchJson>> => {
   const supabaseClient = createSupabaseBrowserClient();
   const { data, error } = await supabaseClient
     .from("sketches")
