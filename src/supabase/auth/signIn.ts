@@ -9,7 +9,7 @@ const signInWithOTP = async (
   const { error: signInError } = await supabaseClient.auth.signInWithOtp({
     email: email,
     options: {
-      shouldCreateUser: false,
+      shouldCreateUser: true,
       emailRedirectTo: emailRedirectTo,
     },
   });
