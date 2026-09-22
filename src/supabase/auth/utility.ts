@@ -7,7 +7,7 @@ const changeUserEmail = async (email: string): Promise<Result<void>> => {
     email: email,
   });
 
-  if (updateEmailError) ({ ok: false, error: updateEmailError });
+  if (updateEmailError) return { ok: false, error: updateEmailError };
   return { ok: true, value: undefined };
 };
 

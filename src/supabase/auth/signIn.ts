@@ -14,7 +14,7 @@ const signInWithOTP = async (
     },
   });
 
-  if (signInError) ({ ok: false, error: signInError });
+  if (signInError) return { ok: false, error: signInError };
   return { ok: true, value: undefined };
 };
 
@@ -29,7 +29,7 @@ const verifyOTP = async (
     type: "email",
   });
 
-  if (verifyOTPError) ({ ok: false, error: verifyOTPError });
+  if (verifyOTPError) return { ok: false, error: verifyOTPError };
   return { ok: true, value: undefined };
 };
 
@@ -38,7 +38,8 @@ const signInAnonymously = async (): Promise<Result<void>> => {
   const { error: anonymouslySignInError } =
     await supabaseClient.auth.signInAnonymously();
 
-  if (anonymouslySignInError) ({ ok: false, error: anonymouslySignInError });
+  if (anonymouslySignInError)
+    return { ok: false, error: anonymouslySignInError };
   return { ok: true, value: undefined };
 };
 
@@ -50,7 +51,7 @@ const convertAnonymousUserToPermanentUser = async (
     email: email,
   });
 
-  if (updateEmailError) ({ ok: false, error: updateEmailError });
+  if (updateEmailError) return { ok: false, error: updateEmailError };
   return { ok: true, value: undefined };
 };
 
