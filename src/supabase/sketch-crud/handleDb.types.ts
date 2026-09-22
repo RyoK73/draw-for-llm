@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Database } from "@/supabase//utils/database.types";
+import { Database } from "@/supabase/utils/database.types";
 
 const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string(),
