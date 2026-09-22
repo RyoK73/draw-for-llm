@@ -1,12 +1,10 @@
 import { z } from "zod";
-import { Database } from "@/supabase/database.types";
+import { Database } from "@/supabase/utils/database.types";
 
 const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
 });
-
-type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
 type GetSketchJson =
   Database["public"]["Tables"]["sketches"]["Row"]["canvas_json"];
@@ -18,5 +16,5 @@ type GetSketchData = Pick<
   "id" | "title" | "description" | "created_at"
 >[];
 
-export type { Result, GetSketchJson, InsertSketch, GetSketchData };
+export type { GetSketchJson, InsertSketch, GetSketchData };
 export { envSchema };

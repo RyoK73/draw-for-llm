@@ -1,16 +1,14 @@
 import {
-  Result,
   GetSketchJson,
   InsertSketch,
   GetSketchData,
 } from "@/supabase/sketch-crud/handleDb.types";
-import createBrowerClient from "@/supabase/supabaseClient";
+import { Result } from "@/utils/utility.types";
+import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 
 // Get the json data from the sketch table.
-const getSketchJson = async (
-  id: string,
-): Promise<Result<GetSketchJson, Error>> => {
-  const supabaseClient = createBrowerClient();
+const getSketchJson = async (id: string): Promise<Result<GetSketchJson>> => {
+  const supabaseClient = createSupabaseBrowserClient();
   const { data, error } = await supabaseClient
     .from("sketches")
     .select("canvas_json")
@@ -26,8 +24,8 @@ const getSketchJson = async (
 // Insert the json data to the sketch table.
 const insertSketch = async (
   sketch: InsertSketch,
-): Promise<Result<InsertSketch, Error>> => {
-  const supabaseClient = createBrowerClient();
+): Promise<Result<InsertSketch>> => {
+  const supabaseClient = createSupabaseBrowserClient();
   const { data, error } = await supabaseClient
     .from("sketches")
     .insert(sketch)
@@ -50,8 +48,8 @@ const insertSketch = async (
 // Get the data from the sketch table to specify the canvas_json.
 const getSketchData = async (
   dataLimit: number = 10,
-): Promise<Result<GetSketchData, Error>> => {
-  const supabaseClient = createBrowerClient();
+): Promise<Result<GetSketchData>> => {
+  const supabaseClient = createSupabaseBrowserClient();
   const { data, error } = await supabaseClient
     .from("sketches")
     .select("id,title,description,created_at")
