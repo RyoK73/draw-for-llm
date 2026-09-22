@@ -1,7 +1,7 @@
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { Result } from "@/utils/utility.types";
 
-const changeUserEmail = async (email: string): Promise<Result<void>> => {
+const updateUser = async (email: string): Promise<Result<void>> => {
   const supabaseClient = createSupabaseBrowserClient();
   const { error: updateEmailError } = await supabaseClient.auth.updateUser({
     email: email,
@@ -11,4 +11,4 @@ const changeUserEmail = async (email: string): Promise<Result<void>> => {
   return { ok: true, value: undefined };
 };
 
-export { changeUserEmail };
+export { updateUser, updateUser as changeUserEmail };

@@ -1,5 +1,6 @@
 import { Result } from "@/utils/utility.types";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
+import { updateUser } from "@/supabase/auth/utility";
 
 const signInWithOTP = async (
   email: string,
@@ -46,13 +47,7 @@ const signInAnonymously = async (): Promise<Result<void>> => {
 const convertAnonymousUserToPermanentUser = async (
   email: string,
 ): Promise<Result<void>> => {
-  const supabaseClient = createSupabaseBrowserClient();
-  const { error: updateEmailError } = await supabaseClient.auth.updateUser({
-    email: email,
-  });
-
-  if (updateEmailError) return { ok: false, error: updateEmailError };
-  return { ok: true, value: undefined };
+  return await updateUser(email);
 };
 
 export {
