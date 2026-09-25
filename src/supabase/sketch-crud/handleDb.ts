@@ -45,6 +45,29 @@ const insertSketch = async (
   return { ok: true, value: data[0] };
 };
 
+const upsertSketch = async (
+  sketch: InsertSketch,
+): Promise<Result<InsertSketch>> => {
+  const supabaseClient = createSupabaseBrowserClient();
+  const { data, error } = await supabaseClient
+    .from("sketches")
+    .upsert(sketch)
+    .select();
+
+  if (error) {
+    return { ok: false, error: error };
+  }
+  if (data.length !== 1) {
+    return {
+      ok: false,
+      error: new Error(
+        `data array does not have exactly one element. data array has ${data.length} elements`,
+      ),
+    };
+  }
+  return { ok: true, value: data[0] };
+};
+
 // Get the data from the sketch table to specify the canvas_json.
 const getSketchData = async (
   dataLimit: number = 10,
@@ -61,4 +84,4 @@ const getSketchData = async (
   return { ok: true, value: data };
 };
 
-export { getSketchJson, insertSketch, getSketchData };
+export { getSketchJson, insertSketch, upsertSketch, getSketchData };
