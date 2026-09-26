@@ -10,11 +10,12 @@ type GetSketchJson =
   Database["public"]["Tables"]["sketches"]["Row"]["canvas_json"];
 
 type InsertSketch = Database["public"]["Tables"]["sketches"]["Insert"];
+type ReturnSketch = Database["public"]["Tables"]["sketches"]["Row"];
 
 type GetSketchData = Pick<
   Database["public"]["Tables"]["sketches"]["Row"],
   "id" | "title" | "description" | "created_at"
 >[];
 
-export type { GetSketchJson, InsertSketch, GetSketchData };
+export type { GetSketchJson, InsertSketch, ReturnSketch, GetSketchData };
 export { envSchema };
