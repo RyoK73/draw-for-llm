@@ -2,12 +2,11 @@ import { Canvas } from "fabric";
 import { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 import { upsertSketch } from "@/supabase/sketch-crud/handleDb";
 import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
-
-type Required = "title" | "description";
+import { SketchInfo } from "@/save-sketch/saveToDb.types";
 
 const saveToDb = async (
   canvasEl: Canvas,
-  sketchInfo: Pick<InsertSketch, Required>,
+  sketchInfo: SketchInfo,
   sketchId?: string,
 ): ReturnType<typeof upsertSketch> => {
   const canvasJson = canvasEl.toJSON();
