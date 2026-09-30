@@ -15,17 +15,19 @@ const useFabricCanvas = ({ width, height, backgroundColor }: FabricCanvas) => {
   useEffect(() => {
     if (!canvasElRef.current) return;
 
-    const canvas = new fabric.Canvas(canvasElRef.current, {
+    fabricCanvasRef.current = new fabric.Canvas(canvasElRef.current, {
       width,
       height,
       backgroundColor,
     });
 
+    fabricCanvasRef.current.renderAll();
+
     return () => {
-      canvas.dispose();
+      if (fabricCanvasRef.current) fabricCanvasRef.current.dispose();
       canvasElRef.current = null;
     };
-  });
+  }, []);
 
   return { canvasElRef, fabricCanvasRef, isDrawing, setIsDrawing };
 };
