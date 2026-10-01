@@ -39,20 +39,21 @@ const shapes: Record<ShapeType, Builder> = {
 };
 
 const useShapes = (fabricCanvasRef: RefObject<Canvas>) => {
-  if (fabricCanvasRef.current === null) return;
   const createShape = (
     type: ShapeType,
     fillColor: string = "transparent",
     strokeColor: string = "#575757",
     strokeWidth: number = 10,
   ) => {
+    const currentFabricCanvasRef = fabricCanvasRef.current;
+    if (!currentFabricCanvasRef) return;
     const shape = shapes[type]({
       fill: fillColor,
       stroke: strokeColor,
       strokeWidth: strokeWidth,
     });
-    fabricCanvasRef.current.add(shape);
-    fabricCanvasRef.current.centerObject(shape);
+    currentFabricCanvasRef.add(shape);
+    currentFabricCanvasRef.centerObject(shape);
   };
 
   return { createShape };
