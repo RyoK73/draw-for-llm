@@ -113,7 +113,7 @@ describe("Is RLS working?", () => {
     expect(upsertSketch.ok).toBe(false);
   });
 
-  test("upsertSketch should return user's own sketch or user's new sketch when user upsert with the other user's id", async () => {
+  test("upsertSketch should throw an error when the user upserts with the other user's id", async () => {
     // Preparation Phase
     const secondUserResult = await createTestUser();
 
@@ -127,36 +127,34 @@ describe("Is RLS working?", () => {
     const secondUserId = secondUserResult.value.createdUserId;
     const secondUserSketch = createTestSketch(secondUserId);
 
+    // First user's opperating
+    vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
+      authenticatedClient,
+    );
+
+    const firstUserInsertResult = await insertSketch(sketchExample);
+
+    if (!firstUserInsertResult.ok) {
+      throw new Error(firstUserInsertResult.error?.message);
+    }
+
+    // Second user's opperating
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(
       secondUserAuthenticatedClient,
     );
-
-    const secondUserInsertResult = await insertSketch(secondUserSketch);
-
-    if (!secondUserInsertResult.ok) {
-      throw new Error(secondUserInsertResult.error.message);
-    }
 
     // Test Phase
     const maliciousTitle = "Malicious Title";
 
     const maliciousSketchExample = {
       ...secondUserSketch,
-      id: secondUserInsertResult.value.id,
+      id: firstUserInsertResult.value.id,
       title: maliciousTitle,
     };
 
     const maliciousUpsertResult = await upsertSketch(maliciousSketchExample);
 
-    if (!maliciousUpsertResult.ok) {
-      throw new Error(maliciousUpsertResult.error.message);
-    }
-
-    expect(maliciousUpsertResult.value.user_id).toEqual(secondUserId);
-    expect(maliciousUpsertResult.value.title).toEqual(maliciousTitle);
-    expect(maliciousUpsertResult.value.id).toEqual(
-      secondUserInsertResult.value.id,
-    );
+    expect(maliciousUpsertResult.ok).toBe(false); // RLS Error
 
     // Cleanup Phase
     if (secondUserId) {
