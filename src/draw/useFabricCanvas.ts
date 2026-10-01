@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as fabric from "fabric";
 
 type FabricCanvas = {
@@ -10,7 +10,6 @@ type FabricCanvas = {
 const useFabricCanvas = ({ width, height, backgroundColor }: FabricCanvas) => {
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<fabric.Canvas>(null);
-  const [isDrawing, setIsDrawing] = useState<boolean>(false);
 
   useEffect(() => {
     if (!canvasElRef.current) return;
@@ -27,9 +26,9 @@ const useFabricCanvas = ({ width, height, backgroundColor }: FabricCanvas) => {
       if (fabricCanvasRef.current) fabricCanvasRef.current.dispose();
       canvasElRef.current = null;
     };
-  }, []);
+  }, [canvasElRef, fabricCanvasRef]);
 
-  return { canvasElRef, fabricCanvasRef, isDrawing, setIsDrawing };
+  return { canvasElRef, fabricCanvasRef };
 };
 
 export { useFabricCanvas };

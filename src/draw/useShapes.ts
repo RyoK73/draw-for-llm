@@ -32,12 +32,14 @@ const shapes: Record<ShapeType, Builder> = {
       width: 200,
       height: 100,
     }),
-  circle: () => new Circle({ ...commonParameters, radius: 100 }),
-  triangle: () => new Triangle({ ...commonParameters }),
+  circle: (optionalParam) =>
+    new Circle({ ...commonParameters, ...optionalParam, radius: 100 }),
+  triangle: (optionalParam) =>
+    new Triangle({ ...commonParameters, ...optionalParam }),
 };
 
 const useShapes = (fabricCanvasRef: RefObject<Canvas>) => {
-  if (fabricCanvasRef === null) return;
+  if (fabricCanvasRef.current === null) return;
   const createShape = (
     type: ShapeType,
     fillColor: string = "transparent",
