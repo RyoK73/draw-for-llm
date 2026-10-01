@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { useSave } from "@/save-sketch/useSave";
 import { Canvas } from "fabric";
 import { saveToDb } from "@/save-sketch/saveToDb";
@@ -48,20 +48,9 @@ describe("useSave", () => {
       fabricCanvasTestRef.current.fire("object:modified");
     });
 
-    expect(saveToDb).toHaveBeenCalled();
-  });
-  it("should retrun error when sketchInfoRef is null", async () => {
-    const { result } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
-    );
-
-    await act(async () => {
-      fabricCanvasTestRef.current.fire("object:modified");
+    await waitFor(() => {
+      expect(saveToDb).toHaveBeenCalled();
     });
-
-    expect(result.current.err?.message).toEqual(
-      "Error: sketchInfoRef is null.",
-    );
   });
 
   it("should call saveToDb when save funtion is called", async () => {
@@ -82,6 +71,44 @@ describe("useSave", () => {
     rerender();
 
     expect(saveToDb).toHaveBeenCalled();
+  });
+  it("should return last one when save() called in a row.", async () => {
+    const { result } = renderHook(() =>
+      useSave(fabricCanvasTestRef, canvasIdTestRef),
+    );
+
+    act(() => {
+      result.current.sketchInfoRef.current = {
+        title: "test title",
+      };
+    });
+
+    const promises: Promise<void>[] = [];
+    await act(async () => {
+      for (let ct: number = 0; ct < 4; ct++) {
+        promises.push(result.current.save());
+      }
+    });
+    await Promise.all(promises);
+
+    expect(saveToDb).toHaveBeenCalledOnce();
+  });
+  it("should set null to the err when saveToDb succeeds", async () => {
+    const { result } = renderHook(() =>
+      useSave(fabricCanvasTestRef, canvasIdTestRef),
+    );
+
+    act(() => {
+      result.current.sketchInfoRef.current = {
+        title: "test title",
+      };
+    });
+
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(result.current.err).toBeUndefined();
   });
   test("The second saveToDb calling should call saveToDb with the Id that first test returns", async () => {
     const testId: string = "returned-id";
@@ -133,74 +160,71 @@ describe("useSave", () => {
       testId,
     );
   });
+  describe("Error pattern", () => {
+    it("should return an error as err when saveToDb returns an error", async () => {
+      vi.mocked(saveToDb).mockResolvedValue({
+        ok: false,
+        error: testError,
+      });
+      const { result, rerender } = renderHook(() =>
+        useSave(fabricCanvasTestRef, canvasIdTestRef),
+      );
 
-  it("should return an error as err when saveToDb returns an error", async () => {
-    vi.mocked(saveToDb).mockResolvedValue({
-      ok: false,
-      error: testError,
+      act(() => {
+        result.current.sketchInfoRef.current = {
+          title: "test title",
+        };
+      });
+
+      await act(async () => {
+        await result.current.save();
+      });
+
+      rerender();
+
+      expect(result.current.err).toEqual(testError);
     });
-    const { result, rerender } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
-    );
+    it("should not call saveToDb when isAutoSave is false", async () => {
+      const { result } = renderHook(() =>
+        useSave(fabricCanvasTestRef, canvasIdTestRef),
+      );
 
-    act(() => {
-      result.current.sketchInfoRef.current = {
-        title: "test title",
-      };
+      act(() => {
+        result.current.sketchInfoRef.current = {
+          title: "test title",
+        };
+        result.current.setAutoSave(false);
+      });
+
+      await act(async () => {
+        fabricCanvasTestRef.current.fire("object:modified");
+      });
+
+      expect(saveToDb).not.toHaveBeenCalled();
     });
+    it("should not call saveToDb when sketchInfoRef is null", async () => {
+      const { result } = renderHook(() =>
+        useSave(fabricCanvasTestRef, canvasIdTestRef),
+      );
 
-    await act(async () => {
-      await result.current.save();
+      await act(async () => {
+        await result.current.save();
+      });
+
+      expect(saveToDb).not.toHaveBeenCalled();
     });
+    it("should retrun error when sketchInfoRef is null", async () => {
+      const { result } = renderHook(() =>
+        useSave(fabricCanvasTestRef, canvasIdTestRef),
+      );
 
-    rerender();
+      await act(async () => {
+        fabricCanvasTestRef.current.fire("object:modified");
+      });
 
-    expect(result.current.err).toEqual(testError);
-  });
-  it("should not call saveToDb when isAutoSave is false", async () => {
-    const { result } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
-    );
-
-    act(() => {
-      result.current.sketchInfoRef.current = {
-        title: "test title",
-      };
-      result.current.setAutoSave(false);
+      expect(result.current.err?.message).toEqual(
+        "Error: sketchInfoRef is null.",
+      );
     });
-
-    await act(async () => {
-      fabricCanvasTestRef.current.fire("object:modified");
-    });
-
-    expect(saveToDb).not.toHaveBeenCalled();
-  });
-  it("should not call saveToDb when sketchInfoRef is null", async () => {
-    const { result } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
-    );
-
-    await act(async () => {
-      await result.current.save();
-    });
-
-    expect(saveToDb).not.toHaveBeenCalled();
-  });
-  it("should set null to the err when saveToDb succeeds", async () => {
-    const { result } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
-    );
-
-    act(() => {
-      result.current.sketchInfoRef.current = {
-        title: "test title",
-      };
-    });
-
-    await act(async () => {
-      await result.current.save();
-    });
-
-    expect(result.current.err).toBeUndefined();
   });
 });

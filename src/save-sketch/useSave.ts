@@ -2,6 +2,9 @@ import * as fabric from "fabric";
 import { useRef, useState, useEffect, RefObject } from "react";
 import { saveToDb } from "@/save-sketch/saveToDb";
 import { SketchInfo } from "@/save-sketch/saveToDb.types";
+import pDebounce from "p-debounce";
+
+const SAVE_DELAY: number = 250;
 
 const useSave = (
   fabricCanvasRef: RefObject<fabric.Canvas>,
@@ -10,13 +13,14 @@ const useSave = (
   const [isAutoSave, setAutoSave] = useState(true);
   const sketchInfoRef = useRef<SketchInfo>(null);
   const [err, setErr] = useState<Error>();
+  const debounceSaveToDb = pDebounce(saveToDb, SAVE_DELAY);
 
   const save = async () => {
     if (sketchInfoRef.current === null) {
       setErr(new Error("Error: sketchInfoRef is null."));
       return;
     }
-    const saveResult = await saveToDb(
+    const saveResult = await debounceSaveToDb(
       fabricCanvasRef.current,
       sketchInfoRef.current,
       sketchIdRef.current,
@@ -36,7 +40,7 @@ const useSave = (
       if (!isAutoSave) return;
       save();
     };
-    fabricCanvasRef.current?.on("object:modified", handler);
+    fabricCanvasRef.current.on("object:modified", handler);
 
     return () => {
       fabricCanvasRef.current.off("object:modified", handler);
