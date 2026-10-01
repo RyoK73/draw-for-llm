@@ -1,10 +1,15 @@
 import { act, renderHook } from "@testing-library/react";
-import { useHistory } from "@/draw/useHistory";
+import { CanvasJson, useHistory } from "@/draw/useHistory";
+
+const createTestCanvasJson = (id: number): CanvasJson => ({
+  version: "0.0.0",
+  objects: [id],
+});
 
 const inputValues = {
-  first: 1,
-  second: 2,
-  third: 3,
+  first: createTestCanvasJson(1),
+  second: createTestCanvasJson(2),
+  third: createTestCanvasJson(3),
 };
 
 describe("useHistory", () => {
