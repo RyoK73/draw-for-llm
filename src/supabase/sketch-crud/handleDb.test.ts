@@ -2,6 +2,7 @@ import { Database } from "@/supabase/utils/database.types";
 import {
   getSketchJson,
   insertSketch,
+  upsertSketch,
   getSketchData,
 } from "@/supabase/sketch-crud/handleDb";
 import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
@@ -104,6 +105,67 @@ describe("Is RLS working?", () => {
 
     expect(getResult.ok).toBe(false);
   });
+  test("upsertSketch should return an error when a client fetches by ANON_KEY", async () => {
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(anonClient);
+
+    const upsertSketch = await insertSketch(sketchExample);
+
+    expect(upsertSketch.ok).toBe(false);
+  });
+
+  test("upsertSketch should throw an error when the user upserts with the other user's id", async () => {
+    // Preparation Phase
+    const secondUserResult = await createTestUser();
+
+    if (!secondUserResult.ok) {
+      throw new Error(secondUserResult.error.message);
+    }
+
+    const secondUserAuthenticatedClient =
+      secondUserResult.value.authenticatedClient;
+
+    const secondUserId = secondUserResult.value.createdUserId;
+    const secondUserSketch = createTestSketch(secondUserId);
+
+    // First user's opperating
+    vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
+      authenticatedClient,
+    );
+
+    const firstUserInsertResult = await insertSketch(sketchExample);
+
+    if (!firstUserInsertResult.ok) {
+      throw new Error(firstUserInsertResult.error?.message);
+    }
+
+    // Second user's opperating
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(
+      secondUserAuthenticatedClient,
+    );
+
+    // Test Phase
+    const maliciousTitle = "Malicious Title";
+
+    const maliciousSketchExample = {
+      ...secondUserSketch,
+      id: firstUserInsertResult.value.id,
+      title: maliciousTitle,
+    };
+
+    const maliciousUpsertResult = await upsertSketch(maliciousSketchExample);
+
+    expect(maliciousUpsertResult.ok).toBe(false); // RLS Error
+
+    // Cleanup Phase
+    if (secondUserId) {
+      await secondUserAuthenticatedClient
+        .from("sketches")
+        .delete()
+        .eq("user_id", secondUserId);
+      const deleteResult = await deleteTestUser(secondUserId);
+      if (!deleteResult.ok) throw new Error(deleteResult.error.message);
+    }
+  });
 });
 
 describe("insertSketch,getSketchJson , and getSketchData should work for an authenticated user", () => {
@@ -161,5 +223,50 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
         expect(data).toMatchObject(newSketch);
       });
     }
+  });
+});
+
+describe("upsertSketch", () => {
+  it("should insert sketch and return an id when user upserts without id", async () => {
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    const upsertResult = await upsertSketch(sketchExample);
+
+    expect(upsertResult.ok).toBe(true);
+
+    if (!upsertResult.ok) {
+      throw new Error(upsertResult.error?.message);
+    }
+
+    expect(upsertResult.value.canvas_json).toEqual(sketchExample.canvas_json);
+    expect(upsertResult.value.id).not.toBeNull();
+  });
+
+  it("should update sketch with the id that user owns", async () => {
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    const insertResult = await insertSketch(sketchExample);
+    if (!insertResult.ok) {
+      throw new Error(insertResult.error?.message);
+    }
+
+    const changedTitle = "This is my first sketch";
+    const updatedSketchExample = {
+      ...sketchExample,
+      id: insertResult.value.id,
+      title: changedTitle,
+    };
+
+    const upsertResult = await upsertSketch(updatedSketchExample);
+
+    expect(upsertResult.ok).toBe(true);
+
+    if (!upsertResult.ok) {
+      throw new Error(upsertResult.error?.message);
+    }
+
+    expect(upsertResult.value.id).toEqual(insertResult.value.id);
+    expect(upsertResult.value.title).toEqual(changedTitle);
+    expect(upsertResult.value.updated_at).not.toEqual(
+      insertResult.value.updated_at,
+    );
   });
 });

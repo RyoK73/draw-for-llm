@@ -2,6 +2,7 @@ import {
   GetSketchJson,
   InsertSketch,
   GetSketchData,
+  ReturnSketch,
 } from "@/supabase/sketch-crud/handleDb.types";
 import { Result } from "@/utils/utility.types";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
@@ -24,11 +25,34 @@ const getSketchJson = async (id: string): Promise<Result<GetSketchJson>> => {
 // Insert the json data to the sketch table.
 const insertSketch = async (
   sketch: InsertSketch,
-): Promise<Result<InsertSketch>> => {
+): Promise<Result<ReturnSketch>> => {
   const supabaseClient = createSupabaseBrowserClient();
   const { data, error } = await supabaseClient
     .from("sketches")
     .insert(sketch)
+    .select();
+
+  if (error) {
+    return { ok: false, error: error };
+  }
+  if (data.length !== 1) {
+    return {
+      ok: false,
+      error: new Error(
+        `data array does not have exactly one element. data array has ${data.length} elements`,
+      ),
+    };
+  }
+  return { ok: true, value: data[0] };
+};
+
+const upsertSketch = async (
+  sketch: InsertSketch,
+): Promise<Result<ReturnSketch>> => {
+  const supabaseClient = createSupabaseBrowserClient();
+  const { data, error } = await supabaseClient
+    .from("sketches")
+    .upsert(sketch)
     .select();
 
   if (error) {
@@ -61,4 +85,4 @@ const getSketchData = async (
   return { ok: true, value: data };
 };
 
-export { getSketchJson, insertSketch, getSketchData };
+export { getSketchJson, insertSketch, upsertSketch, getSketchData };
