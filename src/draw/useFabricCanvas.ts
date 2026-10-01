@@ -24,9 +24,8 @@ const useFabricCanvas = ({ width, height, backgroundColor }: FabricCanvas) => {
 
     return () => {
       if (fabricCanvasRef.current) fabricCanvasRef.current.dispose();
-      canvasElRef.current = null;
     };
-  }, [canvasElRef, fabricCanvasRef]);
+  }, []); // First mount only
 
   return { canvasElRef, fabricCanvasRef };
 };
