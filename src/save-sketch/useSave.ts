@@ -12,7 +12,10 @@ const useSave = (
   const [err, setErr] = useState<Error>();
 
   const save = async () => {
-    if (sketchInfoRef.current === null) return;
+    if (sketchInfoRef.current === null) {
+      setErr(new Error("Error: sketchInfoRef is null."));
+      return;
+    }
     const saveResult = await saveToDb(
       fabricCanvasRef.current,
       sketchInfoRef.current,

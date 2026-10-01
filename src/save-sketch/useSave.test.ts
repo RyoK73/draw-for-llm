@@ -50,6 +50,19 @@ describe("useSave", () => {
 
     expect(saveToDb).toHaveBeenCalled();
   });
+  it("should retrun error when sketchInfoRef is null", async () => {
+    const { result } = renderHook(() =>
+      useSave(fabricCanvasTestRef, canvasIdTestRef),
+    );
+
+    await act(async () => {
+      fabricCanvasTestRef.current.fire("object:modified");
+    });
+
+    expect(result.current.err?.message).toEqual(
+      "Error: sketchInfoRef is null.",
+    );
+  });
 
   it("should call saveToDb when save funtion is called", async () => {
     const { result, rerender } = renderHook(() =>
