@@ -23,6 +23,8 @@ const useSave = (
       setErr(saveResult.error);
       return;
     }
+
+    sketchIdRef.current = saveResult.value.id;
     setErr(undefined);
   };
 

@@ -70,6 +70,56 @@ describe("useSave", () => {
 
     expect(saveToDb).toHaveBeenCalled();
   });
+  test("The second saveToDb calling should call saveToDb with the Id that first test returns", async () => {
+    const testId: string = "returned-id";
+    vi.mocked(saveToDb).mockResolvedValue({
+      ok: true,
+      value: {
+        id: testId,
+        user_id: "test",
+        canvas_json: "test",
+        created_at: "test",
+        updated_at: "test",
+        title: "test",
+        description: "test",
+        fabric_version: "test",
+      },
+    });
+
+    const canvasIdReturnableRef: { current: string | undefined } = {
+      current: undefined,
+    };
+
+    const { result } = renderHook(() =>
+      useSave(fabricCanvasTestRef, canvasIdReturnableRef),
+    );
+
+    act(() => {
+      result.current.sketchInfoRef.current = {
+        title: "test title",
+      };
+    });
+
+    await act(async () => {
+      await result.current.save();
+    });
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(saveToDb).toHaveBeenNthCalledWith(
+      1,
+      fabricCanvasTestRef.current,
+      result.current.sketchInfoRef.current,
+      undefined,
+    );
+    expect(saveToDb).toHaveBeenNthCalledWith(
+      2,
+      fabricCanvasTestRef.current,
+      result.current.sketchInfoRef.current,
+      testId,
+    );
+  });
 
   it("should return an error as err when saveToDb returns an error", async () => {
     vi.mocked(saveToDb).mockResolvedValue({
