@@ -75,7 +75,7 @@ const supabaseTestHelper = () => {
     return { ok: true, value: undefined };
   };
 
-  return { createAnonClient, createTestUser, deleteTestUser };
+  return { adminClient, createAnonClient, createTestUser, deleteTestUser };
 };
 
 export { supabaseTestHelper };
