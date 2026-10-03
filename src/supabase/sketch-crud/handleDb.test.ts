@@ -24,7 +24,7 @@ const createTestSketch = (
 });
 
 // Launch the supabase DB before running this tests.
-let authenticatedClient: ReturnType<typeof createClient>;
+let authenticatedClient: ReturnType<typeof createClient<Database>>;
 let createdUserId: string | undefined;
 let sketchExample: Database["public"]["Tables"]["sketches"]["Insert"];
 
