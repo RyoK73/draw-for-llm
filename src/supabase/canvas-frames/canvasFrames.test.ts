@@ -316,6 +316,29 @@ describe("The CHECK constraint of width and height", () => {
   });
 });
 
+describe("The CHECK constraint of name", () => {
+  it.each([
+    ["an empty string", ""],
+    ["101 characters", "a".repeat(101)],
+  ])("should reject %s", async (_label, name) => {
+    const { error } = await firstUser.client
+      .from("canvas_frames")
+      .insert(createOwnFrame(firstUser.userId, name));
+
+    expect(error?.code).toBe(PG_CHECK_VIOLATION);
+  });
+  it.each([
+    ["1 character", "a"],
+    ["100 characters", "a".repeat(100)],
+  ])("should accept %s", async (_label, name) => {
+    const { error } = await firstUser.client
+      .from("canvas_frames")
+      .insert(createOwnFrame(firstUser.userId, name));
+
+    expect(error).toBeNull();
+  });
+});
+
 describe("The unique constraint of name", () => {
   it("should reject a duplicated name among official frames", async () => {
     const name = `official_${Date.now()}`;
