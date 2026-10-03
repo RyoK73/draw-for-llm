@@ -7,13 +7,32 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
   public: {
     Tables: {
+      canvas_frames: {
+        Row: {
+          height: number;
+          id: string;
+          name: string;
+          user_id: string | null;
+          width: number;
+        };
+        Insert: {
+          height: number;
+          id?: string;
+          name: string;
+          user_id?: string | null;
+          width: number;
+        };
+        Update: {
+          height?: number;
+          id?: string;
+          name?: string;
+          user_id?: string | null;
+          width?: number;
+        };
+        Relationships: [];
+      };
       sketches: {
         Row: {
           canvas_json: Json;
