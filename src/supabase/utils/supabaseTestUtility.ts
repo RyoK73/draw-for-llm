@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { testEnvSchema } from "@/supabase/utils/supabaseTestUtility.types";
 import { CreatedTestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import { Result } from "@/utils/utility.types";
+import { Database } from "@/supabase/utils/database.types";
 
 // helper function
 const supabaseTestHelper = () => {
@@ -9,7 +10,7 @@ const supabaseTestHelper = () => {
 
   const createTestClient = (
     role: "anon" | "admin" = "anon",
-  ): ReturnType<typeof createClient> => {
+  ): ReturnType<typeof createClient<Database>> => {
     let key = processEnv.SUPABASE_LOCAL_ANON_KEY;
 
     if (role === "admin") key = processEnv.SUPABASE_LOCAL_ADMIN_KEY;
@@ -25,7 +26,7 @@ const supabaseTestHelper = () => {
 
   const adminClient = createTestClient("admin");
 
-  const createAnonClient = (): ReturnType<typeof createClient> =>
+  const createAnonClient = (): ReturnType<typeof createClient<Database>> =>
     createTestClient("anon");
 
   const createTestUser = async (): Promise<Result<CreatedTestUser>> => {

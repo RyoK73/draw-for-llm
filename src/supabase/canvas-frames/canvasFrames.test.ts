@@ -8,9 +8,8 @@ const { createTestUser, deleteTestUser } = helper;
 // The helper returns untyped clients, so they are typed here to use the table types.
 type TestClient = SupabaseClient<Database>;
 
-const adminClient = helper.adminClient as unknown as TestClient;
-const createAnonClient = () =>
-  helper.createAnonClient() as unknown as TestClient;
+const adminClient = helper.adminClient;
+const createAnonClient = () => helper.createAnonClient();
 
 type TestUser = { client: TestClient; userId: string };
 
@@ -41,7 +40,7 @@ const createUserOrThrow = async (): Promise<TestUser> => {
   }
 
   return {
-    client: result.value.authenticatedClient as unknown as TestClient,
+    client: result.value.authenticatedClient,
     userId: result.value.createdUserId,
   };
 };
