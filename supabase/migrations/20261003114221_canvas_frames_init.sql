@@ -5,7 +5,9 @@ CREATE TABLE public.canvas_frames (
 	DEFAULT gen_random_uuid(),
 	user_id UUID
 	REFERENCES auth.users ON DELETE CASCADE,
-	name TEXT NOT NULL,
+	name TEXT
+	NOT NULL
+	CHECK (char_length(name) BETWEEN 1 AND 100),
 	width INT
 	NOT NULL
 	CHECK (width BETWEEN 320 AND 1920),
