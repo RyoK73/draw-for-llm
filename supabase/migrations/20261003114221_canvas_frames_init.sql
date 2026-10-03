@@ -43,14 +43,14 @@ ON public.canvas_frames
 AS permissive
 FOR SELECT
 TO authenticated
-USING (user_id IS NULL OR (SELECT auth.uid() = user_id));
+USING (user_id IS NULL OR (SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Authenticated user can insert own canvas_frames"
 ON public.canvas_frames
 AS permissive
 FOR INSERT
 TO authenticated
-WITH CHECK ((SELECT auth.uid() = user_id));
+WITH CHECK ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Authenticated user can update own canvas_frames"
 ON public.canvas_frames
@@ -58,11 +58,11 @@ AS permissive
 FOR UPDATE
 TO authenticated
 USING ((SELECT auth.uid() = user_id))
-WITH CHECK ((SELECT auth.uid() = user_id));
+WITH CHECK ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Authenticated user can delete own canvas_frames"
 ON public.canvas_frames
 AS permissive
 FOR DELETE
 TO authenticated
-USING ((SELECT auth.uid() = user_id));
+USING ((SELECT auth.uid()) = user_id);
