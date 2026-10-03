@@ -213,7 +213,8 @@ describe("Is RLS working?", () => {
     const { data, error } = await secondUser.client
       .from("canvas_frames")
       .update({ width: 1000 })
-      .eq("id", inserted.id);
+      .eq("id", inserted.id)
+      .select();
 
     // The row is invisible to the other user, so no row is affected.
     expect(error).toBeNull();
