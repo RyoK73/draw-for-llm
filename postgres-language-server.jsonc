@@ -12,10 +12,10 @@
     "enabled": true,
     "lineWidth": 100,
     "indentSize": 2,
+    "layout": "fit",
     "indentStyle": "tabs",
     "keywordCase": "upper",
     "constantCase": "upper",
-
-    "typeCase": "lower",
+    "typeCase": "upper",
   },
 }
