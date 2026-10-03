@@ -320,6 +320,10 @@ describe("The CHECK constraint of name", () => {
   it.each([
     ["an empty string", ""],
     ["101 characters", "a".repeat(101)],
+    ["a half-width space only", " "],
+    ["a tab only", "\t"],
+    ["a line break only", "\n"],
+    ["a full-width space only", "　"],
   ])("should reject %s", async (_label, name) => {
     const { error } = await firstUser.client
       .from("canvas_frames")

@@ -7,7 +7,8 @@ CREATE TABLE public.canvas_frames (
 	REFERENCES auth.users ON DELETE CASCADE,
 	name TEXT
 	NOT NULL
-	CHECK (char_length(name) BETWEEN 1 AND 100),
+	CHECK (char_length(name) BETWEEN 1 AND 100)
+	CHECK (name !~ '^[\s　]*$'),
 	width INT
 	NOT NULL
 	CHECK (width BETWEEN 320 AND 1920),
