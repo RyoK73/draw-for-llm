@@ -206,6 +206,85 @@ describe("Is RLS working?", () => {
 
     expect(official).toHaveLength(1);
   });
+
+  it("should not let a user update the other user's frame", async () => {
+    const inserted = await insertOwnFrameOrThrow(firstUser);
+
+    const { data, error } = await secondUser.client
+      .from("canvas_frames")
+      .update({ width: 1000 })
+      .eq("id", inserted.id);
+
+    // The row is invisible to the other user, so no row is affected.
+    expect(error).toBeNull();
+    expect(data).toEqual([]);
+
+    const { data: row } = await adminClient
+      .from("canvas_frames")
+      .select("width")
+      .eq("id", inserted.id)
+      .single();
+
+    expect(row?.width).toBe(inserted.width);
+  });
+
+  it("should not let a user delete the other user's frame", async () => {
+    const inserted = await insertOwnFrameOrThrow(firstUser);
+
+    const { data, error } = await secondUser.client
+      .from("canvas_frames")
+      .delete()
+      .eq("id", inserted.id)
+      .select();
+
+    expect(error).toBeNull();
+    expect(data).toEqual([]);
+
+    const { data: rows } = await adminClient
+      .from("canvas_frames")
+      .select("id")
+      .eq("id", inserted.id);
+
+    expect(rows).toHaveLength(1);
+  });
+
+  it("should reject changing user_id to the other user's id", async () => {
+    const inserted = await insertOwnFrameOrThrow(firstUser);
+
+    const { error } = await firstUser.client
+      .from("canvas_frames")
+      .update({ user_id: secondUser.userId })
+      .eq("id", inserted.id);
+
+    expect(error?.code).toBe(PG_RLS_VIOLATION);
+
+    const { data: row } = await adminClient
+      .from("canvas_frames")
+      .select("user_id")
+      .eq("id", inserted.id)
+      .single();
+
+    expect(row?.user_id).toBe(firstUser.userId);
+  });
+
+  it("should reject changing user_id to null", async () => {
+    const inserted = await insertOwnFrameOrThrow(firstUser);
+
+    const { error } = await firstUser.client
+      .from("canvas_frames")
+      .update({ user_id: null })
+      .eq("id", inserted.id);
+
+    expect(error?.code).toBe(PG_RLS_VIOLATION);
+
+    const { data: row } = await adminClient
+      .from("canvas_frames")
+      .select("user_id")
+      .eq("id", inserted.id)
+      .single();
+
+    expect(row?.user_id).toBe(firstUser.userId);
+  });
 });
 
 describe("The CHECK constraint of width and height", () => {
