@@ -32,12 +32,15 @@ let firstUser: TestUser;
 let secondUser: TestUser;
 let officialNames: string[];
 
+let userIds: string[] = [];
 const createUserOrThrow = async (): Promise<TestUser> => {
   const result = await createTestUser();
 
   if (!result.ok) {
     throw new Error(result.error.message);
   }
+
+  userIds.push(result.value.createdUserId);
 
   return {
     client: result.value.authenticatedClient,
@@ -70,6 +73,7 @@ const insertOwnFrameOrThrow = async (user: TestUser) => {
 };
 
 beforeEach(async () => {
+  userIds = [];
   firstUser = await createUserOrThrow();
   secondUser = await createUserOrThrow();
   officialNames = [];
@@ -77,16 +81,13 @@ beforeEach(async () => {
 
 afterEach(async () => {
   // Test frames must be removed before deleting the users (foreign key).
-  await adminClient
-    .from("canvas_frames")
-    .delete()
-    .in("user_id", [firstUser.userId, secondUser.userId]);
+  await adminClient.from("canvas_frames").delete().in("user_id", userIds);
 
   if (officialNames.length > 0) {
     await adminClient.from("canvas_frames").delete().in("name", officialNames);
   }
 
-  for (const { userId } of [firstUser, secondUser]) {
+  for (const userId of userIds) {
     const deleteResult = await deleteTestUser(userId);
     if (!deleteResult.ok) console.log(deleteResult.error);
   }
