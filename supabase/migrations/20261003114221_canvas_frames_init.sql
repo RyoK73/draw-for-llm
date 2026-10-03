@@ -1,4 +1,3 @@
---Table
 CREATE TABLE public.canvas_frames (
 	id UUID
 	PRIMARY KEY
@@ -14,9 +13,10 @@ CREATE TABLE public.canvas_frames (
 	NOT NULL
 	CHECK (height BETWEEN 320 AND 1920)
 );
+-- With user_id null, the records are presented officially. Those with a non-null user_id are made by the user.
 
 
---Index
+-- Index
 CREATE INDEX ON public.canvas_frames USING btree (user_id);
 CREATE UNIQUE
 INDEX "Default_presets_should_have_unique_name"
@@ -28,11 +28,11 @@ USING btree
 WHERE
 	user_id IS NULL;
 
---Grant
+-- Grant
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.canvas_frames TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.canvas_frames TO service_role;
 
---RLS
+-- RLS
 ALTER TABLE public.canvas_frames
 	ENABLE ROW LEVEL SECURITY;
 
