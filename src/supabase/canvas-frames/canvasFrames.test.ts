@@ -26,6 +26,7 @@ const OFFICIAL_PRESETS = [
 const PG_RLS_VIOLATION = "42501";
 const PG_UNIQUE_VIOLATION = "23505";
 const PG_CHECK_VIOLATION = "23514";
+const PG_RAISE_EXCEPTION = "P0001";
 
 // Launch the supabase DB before running this tests.
 let firstUser: TestUser;
@@ -33,6 +34,7 @@ let secondUser: TestUser;
 let officialNames: string[];
 
 let userIds: string[] = [];
+
 const createUserOrThrow = async (): Promise<TestUser> => {
   const result = await createTestUser();
 
@@ -205,6 +207,75 @@ describe("Is RLS working?", () => {
       .eq("name", "laptop");
 
     expect(official).toHaveLength(1);
+  });
+
+  it("should not let even the admin delete an official frame (the trigger rejects it)", async () => {
+    const { error } = await adminClient
+      .from("canvas_frames")
+      .delete()
+      .is("user_id", null)
+      .eq("name", "laptop");
+
+    expect(error?.code).toBe(PG_RAISE_EXCEPTION);
+    expect(error?.message).toContain(
+      "Change of the official frame is restricted",
+    );
+
+    const { data: official } = await adminClient
+      .from("canvas_frames")
+      .select("name")
+      .is("user_id", null)
+      .eq("name", "laptop");
+
+    expect(official).toHaveLength(1);
+  });
+
+  it.each([
+    ["width", { width: 1000 }],
+    ["name", { name: "laptop_renamed" }],
+  ])(
+    "should not let even the admin update %s of an official frame (the trigger rejects it)",
+    async (_label, change) => {
+      const { error } = await adminClient
+        .from("canvas_frames")
+        .update(change)
+        .is("user_id", null)
+        .eq("name", "laptop");
+
+      expect(error?.code).toBe(PG_RAISE_EXCEPTION);
+      expect(error?.message).toContain(
+        "Change of the official frame is restricted",
+      );
+
+      const { data: official } = await adminClient
+        .from("canvas_frames")
+        .select("width")
+        .is("user_id", null)
+        .eq("name", "laptop")
+        .single();
+
+      expect(official?.width).toBe(1440);
+    },
+  );
+
+  it("should let the admin update and delete a user's own frame (the restriction is limited to official frames)", async () => {
+    const inserted = await insertOwnFrameOrThrow(firstUser);
+
+    const { error: updateError } = await adminClient
+      .from("canvas_frames")
+      .update({ width: 1000 })
+      .eq("id", inserted.id);
+
+    expect(updateError).toBeNull();
+
+    const { data: deleted, error: deleteError } = await adminClient
+      .from("canvas_frames")
+      .delete()
+      .eq("id", inserted.id)
+      .select();
+
+    expect(deleteError).toBeNull();
+    expect(deleted).toHaveLength(1);
   });
 
   it("should not let a user update the other user's frame", async () => {
