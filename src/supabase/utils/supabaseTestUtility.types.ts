@@ -1,6 +1,6 @@
 import z from "zod";
 import { Database } from "@/supabase/utils/database.types";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const testEnvSchema = z.object({
   SUPABASE_LOCAL_URL: z.string(),
@@ -13,5 +13,7 @@ type CreatedTestUser = {
   authenticatedClient: ReturnType<typeof createClient<Database>>;
 };
 
+type TestUser = { client: SupabaseClient<Database>; userId: string };
+
 export { testEnvSchema };
-export type { CreatedTestUser };
+export type { CreatedTestUser, TestUser };

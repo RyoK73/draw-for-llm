@@ -1,4 +1,3 @@
-import { Database } from "@/supabase/utils/database.types";
 import {
   getSketchJson,
   insertSketch,
@@ -6,50 +5,61 @@ import {
   getSketchData,
 } from "@/supabase/sketch-crud/handleDb";
 import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
-import { createClient } from "@supabase/supabase-js";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
+import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
+import type { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 
-const { createAnonClient, createTestUser, deleteTestUser } =
-  supabaseTestHelper();
+const helper = supabaseTestHelper();
+const { adminClient, createAnonClient, insertOwnFrameOrThrow } = helper;
+const userTracker = helper.createTestUserTracker();
 
-const createTestSketch = (
-  userId: string | undefined,
-): Database["public"]["Tables"]["sketches"]["Insert"] => ({
+const createTestSketch = (userId: string | undefined): InsertSketch => ({
   canvas_json: "test",
   description: "this is test",
   title: "sketchExample",
   fabric_version: getFabricVersion(),
   user_id: userId,
+  width: 800,
+  height: 600,
 });
 
 // Launch the supabase DB before running this tests.
-let authenticatedClient: ReturnType<typeof createClient<Database>>;
-let createdUserId: string | undefined;
-let sketchExample: Database["public"]["Tables"]["sketches"]["Insert"];
+let firstUser: TestUser;
+let sketchExample: InsertSketch;
+let frame: Awaited<ReturnType<typeof insertOwnFrameOrThrow>>;
 
 beforeEach(async () => {
-  const createdUserResult = await createTestUser();
-
-  if (!createdUserResult.ok) {
-    throw new Error(createdUserResult.error.message);
-  }
-
-  authenticatedClient = createdUserResult.value.authenticatedClient;
-  createdUserId = createdUserResult.value.createdUserId;
-
-  sketchExample = createTestSketch(createdUserId);
+  userTracker.reset();
+  firstUser = await userTracker.create();
+  sketchExample = createTestSketch(firstUser.userId);
+  frame = await insertOwnFrameOrThrow(
+    firstUser,
+    `frame_${crypto.randomUUID()}`,
+    {
+      width: 1024,
+      height: 768,
+    },
+  );
 });
 
 afterEach(async () => {
   vi.resetAllMocks();
-  if (createdUserId) {
-    await authenticatedClient
-      .from("sketches")
+  try {
+    // Sketches and frames must be removed before deleting the users (foreign key).
+    // service_role has no privilege on sketches, so each user deletes own sketches.
+    for (const user of userTracker.users) {
+      await user.client.from("sketches").delete().eq("user_id", user.userId);
+    }
+    await adminClient
+      .from("canvas_frames")
       .delete()
-      .eq("user_id", createdUserId);
-    const deleteResult = await deleteTestUser(createdUserId);
-    if (!deleteResult.ok) console.log(deleteResult.error);
+      .in(
+        "user_id",
+        userTracker.users.map((user) => user.userId),
+      );
+  } finally {
+    await userTracker.deleteAll();
   }
 });
 
@@ -70,7 +80,7 @@ describe("Is RLS working?", () => {
 
   test("getSketchJson should return an error when a client fetches by ANON_KEY", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
-      authenticatedClient,
+      firstUser.client,
     );
 
     const insertResult = await insertSketch(sketchExample);
@@ -94,7 +104,7 @@ describe("Is RLS working?", () => {
 
   test("getSketchData should return an error when a client fetches by ANON_KEY", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
-      authenticatedClient,
+      firstUser.client,
     );
 
     await insertSketch(sketchExample);
@@ -115,21 +125,12 @@ describe("Is RLS working?", () => {
 
   test("upsertSketch should throw an error when the user upserts with the other user's id", async () => {
     // Preparation Phase
-    const secondUserResult = await createTestUser();
-
-    if (!secondUserResult.ok) {
-      throw new Error(secondUserResult.error.message);
-    }
-
-    const secondUserAuthenticatedClient =
-      secondUserResult.value.authenticatedClient;
-
-    const secondUserId = secondUserResult.value.createdUserId;
-    const secondUserSketch = createTestSketch(secondUserId);
+    const secondUser = await userTracker.create();
+    const secondUserSketch = createTestSketch(secondUser.userId);
 
     // First user's opperating
     vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
-      authenticatedClient,
+      firstUser.client,
     );
 
     const firstUserInsertResult = await insertSketch(sketchExample);
@@ -139,9 +140,7 @@ describe("Is RLS working?", () => {
     }
 
     // Second user's opperating
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(
-      secondUserAuthenticatedClient,
-    );
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(secondUser.client);
 
     // Test Phase
     const maliciousTitle = "Malicious Title";
@@ -155,22 +154,12 @@ describe("Is RLS working?", () => {
     const maliciousUpsertResult = await upsertSketch(maliciousSketchExample);
 
     expect(maliciousUpsertResult.ok).toBe(false); // RLS Error
-
-    // Cleanup Phase
-    if (secondUserId) {
-      await secondUserAuthenticatedClient
-        .from("sketches")
-        .delete()
-        .eq("user_id", secondUserId);
-      const deleteResult = await deleteTestUser(secondUserId);
-      if (!deleteResult.ok) throw new Error(deleteResult.error.message);
-    }
   });
 });
 
 describe("insertSketch,getSketchJson , and getSketchData should work for an authenticated user", () => {
   beforeEach(() => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
   });
   it("should be able to Insert a Json and get a Json that inserted", async () => {
     const insertResult = await insertSketch(sketchExample);
@@ -196,6 +185,29 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
     expect(getResult.value).toEqual(sketchExample.canvas_json);
   });
 
+  it("should save and return width, height, cell_size and frame_id when insertSketch is called with them", async () => {
+    const sketch: InsertSketch = {
+      ...sketchExample,
+      width: frame.width,
+      height: frame.height,
+      cell_size: 32,
+      frame_id: frame.id,
+    };
+
+    const insertResult = await insertSketch(sketch);
+
+    if (!insertResult.ok) {
+      throw new Error(insertResult.error?.message);
+    }
+
+    expect(insertResult.value).toMatchObject({
+      width: 1024,
+      height: 768,
+      cell_size: 32,
+      frame_id: frame.id,
+    });
+  });
+
   it("should throw an error when the id is wrong", async () => {
     await insertSketch(sketchExample);
 
@@ -218,8 +230,14 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
     expect(sketchData.ok).toBe(true);
     if (sketchData.ok) {
       sketchData.value.map((data, index) => {
-        const { canvas_json, fabric_version, user_id, ...newSketch } =
-          sketches[index];
+        const {
+          canvas_json,
+          fabric_version,
+          user_id,
+          width,
+          height,
+          ...newSketch
+        } = sketches[index];
         expect(data).toMatchObject(newSketch);
       });
     }
@@ -228,7 +246,7 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
 
 describe("upsertSketch", () => {
   it("should insert sketch and return an id when user upserts without id", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
     const upsertResult = await upsertSketch(sketchExample);
 
     expect(upsertResult.ok).toBe(true);
@@ -242,7 +260,7 @@ describe("upsertSketch", () => {
   });
 
   it("should update sketch with the id that user owns", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
     const insertResult = await insertSketch(sketchExample);
     if (!insertResult.ok) {
       throw new Error(insertResult.error?.message);
@@ -268,5 +286,72 @@ describe("upsertSketch", () => {
     expect(upsertResult.value.updated_at).not.toEqual(
       insertResult.value.updated_at,
     );
+  });
+
+  it("should save and return width, height, cell_size and frame_id when upsertSketch inserts with them", async () => {
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
+
+    const upsertResult = await upsertSketch({
+      ...sketchExample,
+      width: frame.width,
+      height: frame.height,
+      cell_size: 32,
+      frame_id: frame.id,
+    });
+
+    if (!upsertResult.ok) {
+      throw new Error(upsertResult.error?.message);
+    }
+
+    expect(upsertResult.value).toMatchObject({
+      width: 1024,
+      height: 768,
+      cell_size: 32,
+      frame_id: frame.id,
+    });
+  });
+
+  it("should update width, height, cell_size and frame_id when upsertSketch updates with them", async () => {
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
+    const firstFrame = frame;
+    const secondFrame = await insertOwnFrameOrThrow(
+      firstUser,
+      `frame_${crypto.randomUUID()}`,
+      {
+        width: 640,
+        height: 480,
+      },
+    );
+    const insertResult = await insertSketch({
+      ...sketchExample,
+      width: firstFrame.width,
+      height: firstFrame.height,
+      cell_size: 32,
+      frame_id: firstFrame.id,
+    });
+    if (!insertResult.ok) {
+      throw new Error(insertResult.error?.message);
+    }
+
+    const upsertResult = await upsertSketch({
+      ...sketchExample,
+      id: insertResult.value.id,
+      width: secondFrame.width,
+      height: secondFrame.height,
+      cell_size: 16,
+      frame_id: secondFrame.id,
+    });
+
+    if (!upsertResult.ok) {
+      throw new Error(upsertResult.error?.message);
+    }
+
+    expect(upsertResult.value).toMatchObject({
+      id: insertResult.value.id,
+      width: 640,
+      height: 480,
+      cell_size: 16,
+      frame_id: secondFrame.id,
+    });
   });
 });

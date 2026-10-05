@@ -36,35 +36,55 @@ export type Database = {
       sketches: {
         Row: {
           canvas_json: Json;
+          cell_size: number;
           created_at: string | null;
           description: string | null;
           fabric_version: string;
+          frame_id: string | null;
+          height: number;
           id: string;
           title: string;
           updated_at: string | null;
           user_id: string;
+          width: number;
         };
         Insert: {
-          canvas_json: Json;
+          canvas_json?: Json;
+          cell_size?: number;
           created_at?: string | null;
           description?: string | null;
           fabric_version: string;
-          id?: string;
-          title: string;
-          updated_at?: string | null;
-          user_id?: string;
-        };
-        Update: {
-          canvas_json?: Json;
-          created_at?: string | null;
-          description?: string | null;
-          fabric_version?: string;
+          frame_id?: string | null;
+          height: number;
           id?: string;
           title?: string;
           updated_at?: string | null;
           user_id?: string;
+          width: number;
         };
-        Relationships: [];
+        Update: {
+          canvas_json?: Json;
+          cell_size?: number;
+          created_at?: string | null;
+          description?: string | null;
+          fabric_version?: string;
+          frame_id?: string | null;
+          height?: number;
+          id?: string;
+          title?: string;
+          updated_at?: string | null;
+          user_id?: string;
+          width?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sketches_frame_id_fkey";
+            columns: ["frame_id"];
+            isOneToOne: false;
+            referencedRelation: "canvas_frames";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
