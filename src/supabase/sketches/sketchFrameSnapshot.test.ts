@@ -1,16 +1,10 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { Database } from "@/supabase/utils/database.types";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
+import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
+import type { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 
 const helper = supabaseTestHelper();
-const { createTestUser, deleteTestUser } = helper;
-
-// The helper returns untyped clients, so they are typed here to use the table types.
-type TestClient = SupabaseClient<Database>;
-
-const adminClient = helper.adminClient;
-
-type TestUser = { client: TestClient; userId: string };
+const { adminClient, insertOwnFrameOrThrow } = helper;
+const userTracker = helper.createTestUserTracker();
 
 const PG_NOT_NULL_VIOLATION = "23502";
 const PG_CHECK_VIOLATION = "23514";
@@ -21,22 +15,6 @@ const FABRIC_VERSION = "6.0.0";
 // The official frames can't be changed even by the admin, so the seed data is used as it is.
 let firstUser: TestUser;
 let secondUser: TestUser;
-let userIds: string[] = [];
-
-const createUserOrThrow = async (): Promise<TestUser> => {
-  const result = await createTestUser();
-
-  if (!result.ok) {
-    throw new Error(result.error.message);
-  }
-
-  userIds.push(result.value.createdUserId);
-
-  return {
-    client: result.value.authenticatedClient,
-    userId: result.value.createdUserId,
-  };
-};
 
 const getOfficialFrame = async (name: string) => {
   const { data, error } = await adminClient
@@ -53,31 +31,14 @@ const getOfficialFrame = async (name: string) => {
   return data;
 };
 
-const insertOwnFrameOrThrow = async (
-  user: TestUser,
-  name: string = `test_${Date.now()}`,
-  size: { width: number; height: number } = { width: 800, height: 600 },
-) => {
-  const { data, error } = await user.client
-    .from("canvas_frames")
-    .insert({ user_id: user.userId, name, ...size })
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
-// Columns that the tests omit on purpose are given by the caller, so the payload is loosely typed.
-type SketchPayload = Record<string, unknown>;
+// Every column is optional so that the tests can omit columns on purpose.
+type SketchPayload = Partial<InsertSketch>;
 
 const insertSketch = (user: TestUser, payload: SketchPayload = {}) =>
   user.client
     .from("sketches")
-    .insert({ fabric_version: FABRIC_VERSION, ...payload } as never)
+    // width and height are filled in by the trigger, so they are required in the type but omitted here.
+    .insert({ fabric_version: FABRIC_VERSION, ...payload } as InsertSketch)
     .select()
     .single();
 
@@ -95,22 +56,27 @@ const insertSketchOrThrow = async (
 };
 
 beforeEach(async () => {
-  userIds = [];
-  firstUser = await createUserOrThrow();
-  secondUser = await createUserOrThrow();
+  userTracker.reset();
+  firstUser = await userTracker.create();
+  secondUser = await userTracker.create();
 });
 
 afterEach(async () => {
-  // Sketches and frames must be removed before deleting the users (foreign key).
-  // service_role has no privilege on sketches, so each user deletes own sketches.
-  for (const user of [firstUser, secondUser]) {
-    await user.client.from("sketches").delete().eq("user_id", user.userId);
-  }
-  await adminClient.from("canvas_frames").delete().in("user_id", userIds);
-
-  for (const userId of userIds) {
-    const deleteResult = await deleteTestUser(userId);
-    if (!deleteResult.ok) console.log(deleteResult.error);
+  try {
+    // Sketches and frames must be removed before deleting the users (foreign key).
+    // service_role has no privilege on sketches, so each user deletes own sketches.
+    for (const user of userTracker.users) {
+      await user.client.from("sketches").delete().eq("user_id", user.userId);
+    }
+    await adminClient
+      .from("canvas_frames")
+      .delete()
+      .in(
+        "user_id",
+        userTracker.users.map((user) => user.userId),
+      );
+  } finally {
+    await userTracker.deleteAll();
   }
 });
 
@@ -246,7 +212,7 @@ describe("The snapshot trigger on UPDATE", () => {
 
     const { data, error } = await firstUser.client
       .from("sketches")
-      .update({ frame_id: tablet.id } as never)
+      .update({ frame_id: tablet.id })
       .eq("id", sketch.id)
       .select()
       .single();
@@ -267,7 +233,7 @@ describe("The snapshot trigger on UPDATE", () => {
 
     const { data, error } = await firstUser.client
       .from("sketches")
-      .update({ width: 640 } as never)
+      .update({ width: 640 })
       .eq("id", sketch.id)
       .select()
       .single();
@@ -288,7 +254,7 @@ describe("The snapshot trigger on UPDATE", () => {
 
     const { data, error } = await firstUser.client
       .from("sketches")
-      .update({ frame_id: null } as never)
+      .update({ frame_id: null })
       .eq("id", sketch.id)
       .select()
       .single();
@@ -332,12 +298,12 @@ describe("The snapshot trigger on UPDATE", () => {
 
     const { data, error } = await firstUser.client
       .from("sketches")
-      // width and height are filled by the trigger, so they are omitted on purpose.
+      // width and height are filled in by the trigger, so they are omitted on purpose.
       .upsert({
         id: sketch.id,
         title: "Upserted",
         fabric_version: FABRIC_VERSION,
-      } as never)
+      } as InsertSketch)
       .select()
       .single();
 
@@ -425,7 +391,7 @@ describe("The constraints and the defaults of sketches", () => {
   it("should reject an insert without fabric_version", async () => {
     const { error } = await firstUser.client
       .from("sketches")
-      .insert({} as never)
+      .insert({} as InsertSketch) // this insert will occur an error
       .select()
       .single();
 

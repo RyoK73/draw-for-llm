@@ -1,17 +1,10 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { Database } from "@/supabase/utils/database.types";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
+import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
 
 const helper = supabaseTestHelper();
-const { createTestUser, deleteTestUser } = helper;
-
-// The helper returns untyped clients, so they are typed here to use the table types.
-type TestClient = SupabaseClient<Database>;
-
-const adminClient = helper.adminClient;
+const { adminClient, insertOwnFrameOrThrow } = helper;
+const userTracker = helper.createTestUserTracker();
 const createAnonClient = () => helper.createAnonClient();
-
-type TestUser = { client: TestClient; userId: string };
 
 const OFFICIAL_PRESETS = [
   { name: "desktop_fhd", width: 1920, height: 1080 },
@@ -31,24 +24,7 @@ const PG_RAISE_EXCEPTION = "P0001";
 // Launch the supabase DB before running this tests.
 let firstUser: TestUser;
 let secondUser: TestUser;
-let officialNames: string[];
-
-let userIds: string[] = [];
-
-const createUserOrThrow = async (): Promise<TestUser> => {
-  const result = await createTestUser();
-
-  if (!result.ok) {
-    throw new Error(result.error.message);
-  }
-
-  userIds.push(result.value.createdUserId);
-
-  return {
-    client: result.value.authenticatedClient,
-    userId: result.value.createdUserId,
-  };
-};
+let additionalOfficialFrameNames: string[];
 
 const createOwnFrame = (
   userId: string,
@@ -60,38 +36,32 @@ const createOwnFrame = (
   height: 600,
 });
 
-const insertOwnFrameOrThrow = async (user: TestUser) => {
-  const { data, error } = await user.client
-    .from("canvas_frames")
-    .insert(createOwnFrame(user.userId))
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
 beforeEach(async () => {
-  userIds = [];
-  firstUser = await createUserOrThrow();
-  secondUser = await createUserOrThrow();
-  officialNames = [];
+  userTracker.reset();
+  firstUser = await userTracker.create();
+  secondUser = await userTracker.create();
+  additionalOfficialFrameNames = [];
 });
 
 afterEach(async () => {
-  // Test frames must be removed before deleting the users (foreign key).
-  await adminClient.from("canvas_frames").delete().in("user_id", userIds);
+  try {
+    // Test frames must be removed before deleting the users (foreign key).
+    await adminClient
+      .from("canvas_frames")
+      .delete()
+      .in(
+        "user_id",
+        userTracker.users.map((user) => user.userId),
+      );
 
-  if (officialNames.length > 0) {
-    await adminClient.from("canvas_frames").delete().in("name", officialNames);
-  }
-
-  for (const userId of userIds) {
-    const deleteResult = await deleteTestUser(userId);
-    if (!deleteResult.ok) console.log(deleteResult.error);
+    if (additionalOfficialFrameNames.length > 0) {
+      await adminClient
+        .from("canvas_frames")
+        .delete()
+        .in("name", additionalOfficialFrameNames);
+    }
+  } finally {
+    await userTracker.deleteAll();
   }
 });
 
@@ -417,7 +387,7 @@ describe("The CHECK constraint of name", () => {
 describe("The unique constraint of name", () => {
   it("should reject a duplicated name among official frames", async () => {
     const name = `official_${Date.now()}`;
-    officialNames.push(name);
+    additionalOfficialFrameNames.push(name);
 
     const frame = { user_id: null, name, width: 800, height: 600 };
 

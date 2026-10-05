@@ -1,5 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
-import { testEnvSchema } from "@/supabase/utils/supabaseTestUtility.types";
+import {
+  testEnvSchema,
+  TestUser,
+} from "@/supabase/utils/supabaseTestUtility.types";
 import { CreatedTestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import { Result } from "@/utils/utility.types";
 import { Database } from "@/supabase/utils/database.types";
@@ -30,7 +33,8 @@ const supabaseTestHelper = () => {
     createTestClient("anon");
 
   const createTestUser = async (): Promise<Result<CreatedTestUser>> => {
-    const email = `${Date.now()}xxxx@test.com`;
+    // Test files run in parallel, so Date.now() alone can collide.
+    const email = `${Date.now()}-${crypto.randomUUID()}@test.com`;
     const password = "xxxxxxxxx";
 
     const { error: createdUserError } = await adminClient.auth.admin.createUser(
@@ -76,7 +80,73 @@ const supabaseTestHelper = () => {
     return { ok: true, value: undefined };
   };
 
-  return { adminClient, createAnonClient, createTestUser, deleteTestUser };
+  // Records only the users whose creation succeeded, so that the cleanup never touches a missing user.
+  const createTestUserTracker = () => {
+    let users: TestUser[] = [];
+
+    const create = async (): Promise<TestUser> => {
+      const result = await createTestUser();
+
+      if (!result.ok) {
+        throw new Error(result.error.message);
+      }
+
+      const user = {
+        client: result.value.authenticatedClient,
+        userId: result.value.createdUserId,
+      };
+      users.push(user);
+
+      return user;
+    };
+
+    const reset = () => {
+      users = [];
+    };
+
+    const deleteAll = async () => {
+      for (const { userId } of users) {
+        const deleteResult = await deleteTestUser(userId);
+        if (!deleteResult.ok) console.log(deleteResult.error);
+      }
+    };
+
+    return {
+      create,
+      reset,
+      deleteAll,
+      get users(): readonly TestUser[] {
+        return users;
+      },
+    };
+  };
+
+  const insertOwnFrameOrThrow = async (
+    user: TestUser,
+    name: string = `test_${Date.now()}`,
+    size: { width: number; height: number } = { width: 800, height: 600 },
+  ) => {
+    const { data, error } = await user.client
+      .from("canvas_frames")
+      .insert({ user_id: user.userId, name, ...size })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  };
+
+  return {
+    adminClient,
+    createAnonClient,
+    createTestUser,
+    deleteTestUser,
+    createTestUserTracker,
+    insertOwnFrameOrThrow,
+  };
 };
 
 export { supabaseTestHelper };
