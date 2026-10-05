@@ -13,7 +13,7 @@ ALTER TABLE public.sketches
 		DEFAULT 20
 		CHECK (cell_size
 		BETWEEN 4
-		AND 200 -- Change the range as needed.
+		AND 200 --TODO: 4~200: Provisional value with no particular basis; revisit once real usage data is available.
 		),
 	ALTER COLUMN title SET DEFAULT 'Untitled',
 	ALTER COLUMN canvas_json SET DEFAULT CAST('{}' AS JSONB),
