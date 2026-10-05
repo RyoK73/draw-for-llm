@@ -1,4 +1,3 @@
-import { Database } from "@/supabase/utils/database.types";
 import {
   getSketchJson,
   insertSketch,
@@ -6,17 +5,14 @@ import {
   getSketchData,
 } from "@/supabase/sketch-crud/handleDb";
 import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
-import { createClient } from "@supabase/supabase-js";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
+import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import type { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 
-const {
-  createAnonClient,
-  createTestUser,
-  deleteTestUser,
-  insertOwnFrameOrThrow,
-} = supabaseTestHelper();
+const helper = supabaseTestHelper();
+const { adminClient, createAnonClient, insertOwnFrameOrThrow } = helper;
+const userTracker = helper.createTestUserTracker();
 
 const createTestSketch = (userId: string | undefined): InsertSketch => ({
   canvas_json: "test",
@@ -29,46 +25,41 @@ const createTestSketch = (userId: string | undefined): InsertSketch => ({
 });
 
 // Launch the supabase DB before running this tests.
-let authenticatedClient: ReturnType<typeof createClient<Database>>;
-let createdUserId: string | undefined;
+let firstUser: TestUser;
 let sketchExample: InsertSketch;
-
-const insertOwnFrame = (
-  name: string,
-  size: { width: number; height: number },
-) => {
-  if (!createdUserId)
-    throw new Error("Unexpected: createdUserId is undefined.");
-
-  return insertOwnFrameOrThrow(
-    { client: authenticatedClient, userId: createdUserId },
-    name,
-    size,
-  );
-};
+let frame: Awaited<ReturnType<typeof insertOwnFrameOrThrow>>;
 
 beforeEach(async () => {
-  const createdUserResult = await createTestUser();
-
-  if (!createdUserResult.ok) {
-    throw new Error(createdUserResult.error.message);
-  }
-
-  authenticatedClient = createdUserResult.value.authenticatedClient;
-  createdUserId = createdUserResult.value.createdUserId;
-
-  sketchExample = createTestSketch(createdUserId);
+  userTracker.reset();
+  firstUser = await userTracker.create();
+  sketchExample = createTestSketch(firstUser.userId);
+  frame = await insertOwnFrameOrThrow(
+    firstUser,
+    `frame_${crypto.randomUUID()}`,
+    {
+      width: 1024,
+      height: 768,
+    },
+  );
 });
 
 afterEach(async () => {
   vi.resetAllMocks();
-  if (createdUserId) {
-    await authenticatedClient
-      .from("sketches")
+  try {
+    // Sketches and frames must be removed before deleting the users (foreign key).
+    // service_role has no privilege on sketches, so each user deletes own sketches.
+    for (const user of userTracker.users) {
+      await user.client.from("sketches").delete().eq("user_id", user.userId);
+    }
+    await adminClient
+      .from("canvas_frames")
       .delete()
-      .eq("user_id", createdUserId);
-    const deleteResult = await deleteTestUser(createdUserId);
-    if (!deleteResult.ok) console.log(deleteResult.error);
+      .in(
+        "user_id",
+        userTracker.users.map((user) => user.userId),
+      );
+  } finally {
+    await userTracker.deleteAll();
   }
 });
 
@@ -89,7 +80,7 @@ describe("Is RLS working?", () => {
 
   test("getSketchJson should return an error when a client fetches by ANON_KEY", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
-      authenticatedClient,
+      firstUser.client,
     );
 
     const insertResult = await insertSketch(sketchExample);
@@ -113,7 +104,7 @@ describe("Is RLS working?", () => {
 
   test("getSketchData should return an error when a client fetches by ANON_KEY", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
-      authenticatedClient,
+      firstUser.client,
     );
 
     await insertSketch(sketchExample);
@@ -134,21 +125,12 @@ describe("Is RLS working?", () => {
 
   test("upsertSketch should throw an error when the user upserts with the other user's id", async () => {
     // Preparation Phase
-    const secondUserResult = await createTestUser();
-
-    if (!secondUserResult.ok) {
-      throw new Error(secondUserResult.error.message);
-    }
-
-    const secondUserAuthenticatedClient =
-      secondUserResult.value.authenticatedClient;
-
-    const secondUserId = secondUserResult.value.createdUserId;
-    const secondUserSketch = createTestSketch(secondUserId);
+    const secondUser = await userTracker.create();
+    const secondUserSketch = createTestSketch(secondUser.userId);
 
     // First user's opperating
     vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
-      authenticatedClient,
+      firstUser.client,
     );
 
     const firstUserInsertResult = await insertSketch(sketchExample);
@@ -158,9 +140,7 @@ describe("Is RLS working?", () => {
     }
 
     // Second user's opperating
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(
-      secondUserAuthenticatedClient,
-    );
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(secondUser.client);
 
     // Test Phase
     const maliciousTitle = "Malicious Title";
@@ -174,22 +154,12 @@ describe("Is RLS working?", () => {
     const maliciousUpsertResult = await upsertSketch(maliciousSketchExample);
 
     expect(maliciousUpsertResult.ok).toBe(false); // RLS Error
-
-    // Cleanup Phase
-    if (secondUserId) {
-      await secondUserAuthenticatedClient
-        .from("sketches")
-        .delete()
-        .eq("user_id", secondUserId);
-      const deleteResult = await deleteTestUser(secondUserId);
-      if (!deleteResult.ok) throw new Error(deleteResult.error.message);
-    }
   });
 });
 
 describe("insertSketch,getSketchJson , and getSketchData should work for an authenticated user", () => {
   beforeEach(() => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
   });
   it("should be able to Insert a Json and get a Json that inserted", async () => {
     const insertResult = await insertSketch(sketchExample);
@@ -216,10 +186,6 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
   });
 
   it("should save and return width, height, cell_size and frame_id when insertSketch is called with them", async () => {
-    const frame = await insertOwnFrame(`frame_${crypto.randomUUID()}`, {
-      width: 1024,
-      height: 768,
-    });
     const sketch: InsertSketch = {
       ...sketchExample,
       width: frame.width,
@@ -280,7 +246,7 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
 
 describe("upsertSketch", () => {
   it("should insert sketch and return an id when user upserts without id", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
     const upsertResult = await upsertSketch(sketchExample);
 
     expect(upsertResult.ok).toBe(true);
@@ -294,7 +260,7 @@ describe("upsertSketch", () => {
   });
 
   it("should update sketch with the id that user owns", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
     const insertResult = await insertSketch(sketchExample);
     if (!insertResult.ok) {
       throw new Error(insertResult.error?.message);
@@ -323,11 +289,7 @@ describe("upsertSketch", () => {
   });
 
   it("should save and return width, height, cell_size and frame_id when upsertSketch inserts with them", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
-    const frame = await insertOwnFrame(`frame_${crypto.randomUUID()}`, {
-      width: 1024,
-      height: 768,
-    });
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
 
     const upsertResult = await upsertSketch({
       ...sketchExample,
@@ -350,15 +312,16 @@ describe("upsertSketch", () => {
   });
 
   it("should update width, height, cell_size and frame_id when upsertSketch updates with them", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
-    const firstFrame = await insertOwnFrame(`frame_${crypto.randomUUID()}`, {
-      width: 1024,
-      height: 768,
-    });
-    const secondFrame = await insertOwnFrame(`frame_${crypto.randomUUID()}`, {
-      width: 640,
-      height: 480,
-    });
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
+    const firstFrame = frame;
+    const secondFrame = await insertOwnFrameOrThrow(
+      firstUser,
+      `frame_${crypto.randomUUID()}`,
+      {
+        width: 640,
+        height: 480,
+      },
+    );
     const insertResult = await insertSketch({
       ...sketchExample,
       width: firstFrame.width,
