@@ -1,3 +1,5 @@
+SET lock_timeout = '5s';
+
 CREATE FUNCTION public.prevent_change_official_frames()
 RETURNS TRIGGER
 LANGUAGE plpgsql
