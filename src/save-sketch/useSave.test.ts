@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { useSave } from "@/save-sketch/useSave";
 import { Canvas } from "fabric";
 import { saveToDb } from "@/save-sketch/saveToDb";
+import { CanvasFrame } from "@/save-sketch/saveToDb.types";
 
 vi.mock("@/save-sketch/saveToDb", () => ({
   saveToDb: vi.fn(),
@@ -10,10 +11,19 @@ vi.mock("@/save-sketch/saveToDb", () => ({
 describe("useSave", () => {
   const fabricCanvasTestRef = { current: new Canvas() };
   const canvasIdTestRef = { current: "canvas_id" };
+  const testFrame: CanvasFrame = {
+    width: 1920,
+    height: 1080,
+    frame_id: "test-frame-id",
+  };
+  const frameTestRef: { current: CanvasFrame | null } = {
+    current: testFrame,
+  };
   const testError = new Error("Error: Test Error");
 
   beforeEach(() => {
     vi.clearAllMocks();
+    frameTestRef.current = testFrame;
     vi.mocked(saveToDb).mockResolvedValue({
       ok: true,
       value: {
@@ -25,6 +35,10 @@ describe("useSave", () => {
         title: "test",
         description: "test",
         fabric_version: "test",
+        cell_size: 32,
+        frame_id: null,
+        width: 1920,
+        height: 1080,
       },
     });
   });
@@ -35,7 +49,7 @@ describe("useSave", () => {
 
   it("should call saveToDb when customHook calls", async () => {
     const { result } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
+      useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
     );
 
     act(() => {
@@ -55,7 +69,7 @@ describe("useSave", () => {
 
   it("should call saveToDb when save funtion is called", async () => {
     const { result, rerender } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
+      useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
     );
 
     act(() => {
@@ -74,7 +88,7 @@ describe("useSave", () => {
   });
   it("should return last one when save() called in a row.", async () => {
     const { result } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
+      useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
     );
 
     act(() => {
@@ -93,9 +107,82 @@ describe("useSave", () => {
 
     expect(saveToDb).toHaveBeenCalledOnce();
   });
+  it("should call saveToDb with the frame of frameRef", async () => {
+    const { result } = renderHook(() =>
+      useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
+    );
+
+    act(() => {
+      result.current.sketchInfoRef.current = {
+        title: "test title",
+      };
+    });
+
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(saveToDb).toHaveBeenCalledWith(
+      fabricCanvasTestRef.current,
+      result.current.sketchInfoRef.current,
+      testFrame,
+      canvasIdTestRef.current,
+    );
+  });
+  it("should call saveToDb with the latest frame of frameRef", async () => {
+    const { result } = renderHook(() =>
+      useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
+    );
+
+    act(() => {
+      result.current.sketchInfoRef.current = {
+        title: "test title",
+      };
+    });
+    const customFrame: CanvasFrame = {
+      width: 800,
+      height: 600,
+      frame_id: null,
+    };
+    frameTestRef.current = customFrame;
+
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(saveToDb).toHaveBeenCalledWith(
+      fabricCanvasTestRef.current,
+      result.current.sketchInfoRef.current,
+      customFrame,
+      canvasIdTestRef.current,
+    );
+  });
+  it("should pass cell_size in sketchInfoRef to saveToDb", async () => {
+    const { result } = renderHook(() =>
+      useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
+    );
+
+    act(() => {
+      result.current.sketchInfoRef.current = {
+        title: "test title",
+        cell_size: 32,
+      };
+    });
+
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(saveToDb).toHaveBeenCalledWith(
+      fabricCanvasTestRef.current,
+      { title: "test title", cell_size: 32 },
+      testFrame,
+      canvasIdTestRef.current,
+    );
+  });
   it("should set null to the err when saveToDb succeeds", async () => {
     const { result } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdTestRef),
+      useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
     );
 
     act(() => {
@@ -123,6 +210,10 @@ describe("useSave", () => {
         title: "test",
         description: "test",
         fabric_version: "test",
+        cell_size: 32,
+        frame_id: null,
+        width: 1920,
+        height: 1080,
       },
     });
 
@@ -131,7 +222,7 @@ describe("useSave", () => {
     };
 
     const { result } = renderHook(() =>
-      useSave(fabricCanvasTestRef, canvasIdReturnableRef),
+      useSave(fabricCanvasTestRef, canvasIdReturnableRef, frameTestRef),
     );
 
     act(() => {
@@ -151,12 +242,14 @@ describe("useSave", () => {
       1,
       fabricCanvasTestRef.current,
       result.current.sketchInfoRef.current,
+      testFrame,
       undefined,
     );
     expect(saveToDb).toHaveBeenNthCalledWith(
       2,
       fabricCanvasTestRef.current,
       result.current.sketchInfoRef.current,
+      testFrame,
       testId,
     );
   });
@@ -167,7 +260,7 @@ describe("useSave", () => {
         error: testError,
       });
       const { result, rerender } = renderHook(() =>
-        useSave(fabricCanvasTestRef, canvasIdTestRef),
+        useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
       );
 
       act(() => {
@@ -186,7 +279,7 @@ describe("useSave", () => {
     });
     it("should not call saveToDb when isAutoSave is false", async () => {
       const { result } = renderHook(() =>
-        useSave(fabricCanvasTestRef, canvasIdTestRef),
+        useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
       );
 
       act(() => {
@@ -204,7 +297,7 @@ describe("useSave", () => {
     });
     it("should not call saveToDb when sketchInfoRef is null", async () => {
       const { result } = renderHook(() =>
-        useSave(fabricCanvasTestRef, canvasIdTestRef),
+        useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
       );
 
       await act(async () => {
@@ -215,7 +308,7 @@ describe("useSave", () => {
     });
     it("should retrun error when sketchInfoRef is null", async () => {
       const { result } = renderHook(() =>
-        useSave(fabricCanvasTestRef, canvasIdTestRef),
+        useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
       );
 
       await act(async () => {
@@ -225,6 +318,42 @@ describe("useSave", () => {
       expect(result.current.err?.message).toEqual(
         "Error: sketchInfoRef is null.",
       );
+    });
+    it("should not call saveToDb when frameRef is null", async () => {
+      frameTestRef.current = null;
+      const { result } = renderHook(() =>
+        useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
+      );
+
+      act(() => {
+        result.current.sketchInfoRef.current = {
+          title: "test title",
+        };
+      });
+
+      await act(async () => {
+        await result.current.save();
+      });
+
+      expect(saveToDb).not.toHaveBeenCalled();
+    });
+    it("should return error when frameRef is null", async () => {
+      frameTestRef.current = null;
+      const { result } = renderHook(() =>
+        useSave(fabricCanvasTestRef, canvasIdTestRef, frameTestRef),
+      );
+
+      act(() => {
+        result.current.sketchInfoRef.current = {
+          title: "test title",
+        };
+      });
+
+      await act(async () => {
+        await result.current.save();
+      });
+
+      expect(result.current.err?.message).toEqual("Error: frameRef is null.");
     });
   });
 });

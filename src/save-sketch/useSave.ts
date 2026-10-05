@@ -1,7 +1,7 @@
 import * as fabric from "fabric";
 import { useRef, useState, useEffect, RefObject } from "react";
 import { saveToDb } from "@/save-sketch/saveToDb";
-import { SketchInfo } from "@/save-sketch/saveToDb.types";
+import { SketchInfo, CanvasFrame } from "@/save-sketch/saveToDb.types";
 import pDebounce from "p-debounce";
 
 const SAVE_DELAY: number = 250;
@@ -9,6 +9,7 @@ const SAVE_DELAY: number = 250;
 const useSave = (
   fabricCanvasRef: RefObject<fabric.Canvas>,
   sketchIdRef: RefObject<string | undefined>,
+  frameRef: RefObject<CanvasFrame | null>,
 ) => {
   const [isAutoSave, setAutoSave] = useState(true);
   const sketchInfoRef = useRef<SketchInfo>(null);
@@ -20,9 +21,14 @@ const useSave = (
       setErr(new Error("Error: sketchInfoRef is null."));
       return;
     }
+    if (frameRef.current === null) {
+      setErr(new Error("Error: frameRef is null."));
+      return;
+    }
     const saveResult = await debounceSaveToDb(
       fabricCanvasRef.current,
       sketchInfoRef.current,
+      frameRef.current,
       sketchIdRef.current,
     );
 
