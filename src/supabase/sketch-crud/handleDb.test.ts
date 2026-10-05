@@ -9,24 +9,43 @@ import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
+import type { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 
-const { createAnonClient, createTestUser, deleteTestUser } =
-  supabaseTestHelper();
+const {
+  createAnonClient,
+  createTestUser,
+  deleteTestUser,
+  insertOwnFrameOrThrow,
+} = supabaseTestHelper();
 
-const createTestSketch = (
-  userId: string | undefined,
-): Database["public"]["Tables"]["sketches"]["Insert"] => ({
+const createTestSketch = (userId: string | undefined): InsertSketch => ({
   canvas_json: "test",
   description: "this is test",
   title: "sketchExample",
   fabric_version: getFabricVersion(),
   user_id: userId,
+  width: 800,
+  height: 600,
 });
 
 // Launch the supabase DB before running this tests.
 let authenticatedClient: ReturnType<typeof createClient<Database>>;
 let createdUserId: string | undefined;
-let sketchExample: Database["public"]["Tables"]["sketches"]["Insert"];
+let sketchExample: InsertSketch;
+
+const insertOwnFrame = (
+  name: string,
+  size: { width: number; height: number },
+) => {
+  if (!createdUserId)
+    throw new Error("Unexpected: createdUserId is undefined.");
+
+  return insertOwnFrameOrThrow(
+    { client: authenticatedClient, userId: createdUserId },
+    name,
+    size,
+  );
+};
 
 beforeEach(async () => {
   const createdUserResult = await createTestUser();
@@ -196,6 +215,33 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
     expect(getResult.value).toEqual(sketchExample.canvas_json);
   });
 
+  it("should save and return width, height, cell_size and frame_id when insertSketch is called with them", async () => {
+    const frame = await insertOwnFrame(`frame_${crypto.randomUUID()}`, {
+      width: 1024,
+      height: 768,
+    });
+    const sketch: InsertSketch = {
+      ...sketchExample,
+      width: frame.width,
+      height: frame.height,
+      cell_size: 32,
+      frame_id: frame.id,
+    };
+
+    const insertResult = await insertSketch(sketch);
+
+    if (!insertResult.ok) {
+      throw new Error(insertResult.error?.message);
+    }
+
+    expect(insertResult.value).toMatchObject({
+      width: 1024,
+      height: 768,
+      cell_size: 32,
+      frame_id: frame.id,
+    });
+  });
+
   it("should throw an error when the id is wrong", async () => {
     await insertSketch(sketchExample);
 
@@ -218,8 +264,14 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
     expect(sketchData.ok).toBe(true);
     if (sketchData.ok) {
       sketchData.value.map((data, index) => {
-        const { canvas_json, fabric_version, user_id, ...newSketch } =
-          sketches[index];
+        const {
+          canvas_json,
+          fabric_version,
+          user_id,
+          width,
+          height,
+          ...newSketch
+        } = sketches[index];
         expect(data).toMatchObject(newSketch);
       });
     }
@@ -268,5 +320,75 @@ describe("upsertSketch", () => {
     expect(upsertResult.value.updated_at).not.toEqual(
       insertResult.value.updated_at,
     );
+  });
+
+  it("should save and return width, height, cell_size and frame_id when upsertSketch inserts with them", async () => {
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    const frame = await insertOwnFrame(`frame_${crypto.randomUUID()}`, {
+      width: 1024,
+      height: 768,
+    });
+
+    const upsertResult = await upsertSketch({
+      ...sketchExample,
+      width: frame.width,
+      height: frame.height,
+      cell_size: 32,
+      frame_id: frame.id,
+    });
+
+    if (!upsertResult.ok) {
+      throw new Error(upsertResult.error?.message);
+    }
+
+    expect(upsertResult.value).toMatchObject({
+      width: 1024,
+      height: 768,
+      cell_size: 32,
+      frame_id: frame.id,
+    });
+  });
+
+  it("should update width, height, cell_size and frame_id when upsertSketch updates with them", async () => {
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(authenticatedClient);
+    const firstFrame = await insertOwnFrame(`frame_${crypto.randomUUID()}`, {
+      width: 1024,
+      height: 768,
+    });
+    const secondFrame = await insertOwnFrame(`frame_${crypto.randomUUID()}`, {
+      width: 640,
+      height: 480,
+    });
+    const insertResult = await insertSketch({
+      ...sketchExample,
+      width: firstFrame.width,
+      height: firstFrame.height,
+      cell_size: 32,
+      frame_id: firstFrame.id,
+    });
+    if (!insertResult.ok) {
+      throw new Error(insertResult.error?.message);
+    }
+
+    const upsertResult = await upsertSketch({
+      ...sketchExample,
+      id: insertResult.value.id,
+      width: secondFrame.width,
+      height: secondFrame.height,
+      cell_size: 16,
+      frame_id: secondFrame.id,
+    });
+
+    if (!upsertResult.ok) {
+      throw new Error(upsertResult.error?.message);
+    }
+
+    expect(upsertResult.value).toMatchObject({
+      id: insertResult.value.id,
+      width: 640,
+      height: 480,
+      cell_size: 16,
+      frame_id: secondFrame.id,
+    });
   });
 });
