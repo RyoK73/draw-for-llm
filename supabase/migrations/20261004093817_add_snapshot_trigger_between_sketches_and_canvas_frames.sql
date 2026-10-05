@@ -34,7 +34,7 @@ BEGIN
     SELECT id, width, height
       INTO frame_rec
       FROM public.canvas_frames
-      WHERE name = 'desktop_fhd';
+      WHERE name = 'desktop_fhd' AND user_id IS NULL;
 
     IF NOT FOUND THEN
       RAISE EXCEPTION 'canvas_frame desktop_fhd not found';
