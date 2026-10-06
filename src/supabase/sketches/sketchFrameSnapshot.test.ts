@@ -60,7 +60,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  frameUserTracker.deleteAll();
+  await frameUserTracker.deleteAll();
 });
 
 describe("The snapshot trigger on INSERT", () => {
