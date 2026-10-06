@@ -19,7 +19,8 @@
     "db:push": "supabase db push",
     "db:pull": "supabase db pull",
     "db:new": "supabase migration new",
-    "type:gen": ". ./.env.local && supabase gen types typescript --project-id $PROJECTID --schema public > ./src/supabase/utils/database.types.ts"
+    "type:gen": ". ./.env.local && supabase gen types typescript --project-id $PROJECTID --schema public > ./src/supabase/utils/database.types.ts",
+    "type:gen-local": "supabase gen types typescript --local > ./src/supabase/utils/database.types.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
