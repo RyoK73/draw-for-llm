@@ -8,7 +8,7 @@ beforeAll(() => client.connect());
 afterAll(() => client.end());
 
 describe("privileges", () => {
-  test("The anon and service_role roles have no previleges and authenticated role doesnt't have `truncate,references,maintain,trigger` privileges", async () => {
+  test("The anon and service_role roles have no privileges and authenticated role doesn't have `truncate,references,maintain,trigger` privileges", async () => {
     const { rows } = await client.query(`
         select pgc.oid,pgc.relkind,pgnsp.nspname,pgc.relname
         from pg_class as pgc
