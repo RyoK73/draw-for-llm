@@ -6,16 +6,19 @@ const FABRIC_VERSION = "6.0.0";
 // Every column is optional so that the tests can omit columns on purpose.
 type SketchPayload = Partial<InsertSketch>;
 
-const insertSketchOrThrow = async (
-  user: TestUser,
-  payload: SketchPayload = {},
-) => {
-  const { data, error } = await user.client
+const insertSketch = (user: TestUser, payload: SketchPayload = {}) =>
+  user.client
     .from("sketches")
     // width and height are filled in by the trigger, so they are required in the type but omitted here.
     .insert({ fabric_version: FABRIC_VERSION, ...payload } as InsertSketch)
     .select()
     .single();
+
+const insertSketchOrThrow = async (
+  user: TestUser,
+  payload: SketchPayload = {},
+) => {
+  const { data, error } = await insertSketch(user, payload);
 
   if (error) {
     throw new Error(error.message);
@@ -24,5 +27,5 @@ const insertSketchOrThrow = async (
   return data;
 };
 
-export { insertSketchOrThrow };
+export { FABRIC_VERSION, insertSketch, insertSketchOrThrow };
 export type { SketchPayload };

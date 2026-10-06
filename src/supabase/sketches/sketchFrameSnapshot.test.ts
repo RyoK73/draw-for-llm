@@ -1,4 +1,9 @@
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
+import {
+  FABRIC_VERSION,
+  insertSketch,
+  insertSketchOrThrow,
+} from "@/supabase/utils/sketchTestUtility";
 import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import type { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 
@@ -8,8 +13,6 @@ const userTracker = helper.createTestUserTracker();
 
 const PG_NOT_NULL_VIOLATION = "23502";
 const PG_CHECK_VIOLATION = "23514";
-
-const FABRIC_VERSION = "6.0.0";
 
 // Launch the supabase DB (with the seed data) before running this tests.
 // The official frames can't be changed even by the admin, so the seed data is used as it is.
@@ -23,30 +26,6 @@ const getOfficialFrame = async (name: string) => {
     .is("user_id", null)
     .eq("name", name)
     .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
-// Every column is optional so that the tests can omit columns on purpose.
-type SketchPayload = Partial<InsertSketch>;
-
-const insertSketch = (user: TestUser, payload: SketchPayload = {}) =>
-  user.client
-    .from("sketches")
-    // width and height are filled in by the trigger, so they are required in the type but omitted here.
-    .insert({ fabric_version: FABRIC_VERSION, ...payload } as InsertSketch)
-    .select()
-    .single();
-
-const insertSketchOrThrow = async (
-  user: TestUser,
-  payload: SketchPayload = {},
-) => {
-  const { data, error } = await insertSketch(user, payload);
 
   if (error) {
     throw new Error(error.message);
