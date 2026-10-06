@@ -62,22 +62,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  try {
-    // Sketches and frames must be removed before deleting the users (foreign key).
-    // service_role has no privilege on sketches, so each user deletes own sketches.
-    for (const user of userTracker.users) {
-      await user.client.from("sketches").delete().eq("user_id", user.userId);
-    }
-    await adminClient
-      .from("canvas_frames")
-      .delete()
-      .in(
-        "user_id",
-        userTracker.users.map((user) => user.userId),
-      );
-  } finally {
-    await userTracker.deleteAll();
-  }
+  await userTracker.deleteAll();
 });
 
 describe("The snapshot trigger on INSERT", () => {

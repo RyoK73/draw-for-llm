@@ -11,7 +11,7 @@ import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import type { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 
 const helper = supabaseTestHelper();
-const { adminClient, createAnonClient, insertOwnFrameOrThrow } = helper;
+const { createAnonClient, insertOwnFrameOrThrow } = helper;
 const userTracker = helper.createTestUserTracker();
 
 const createTestSketch = (userId: string | undefined): InsertSketch => ({
@@ -45,22 +45,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   vi.resetAllMocks();
-  try {
-    // Sketches and frames must be removed before deleting the users (foreign key).
-    // service_role has no privilege on sketches, so each user deletes own sketches.
-    for (const user of userTracker.users) {
-      await user.client.from("sketches").delete().eq("user_id", user.userId);
-    }
-    await adminClient
-      .from("canvas_frames")
-      .delete()
-      .in(
-        "user_id",
-        userTracker.users.map((user) => user.userId),
-      );
-  } finally {
-    await userTracker.deleteAll();
-  }
+  await userTracker.deleteAll();
 });
 
 vi.mock("@/supabase/utils/browserClient", () => ({

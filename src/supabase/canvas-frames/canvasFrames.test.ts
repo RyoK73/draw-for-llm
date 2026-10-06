@@ -45,15 +45,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   try {
-    // Test frames must be removed before deleting the users (foreign key).
-    await adminClient
-      .from("canvas_frames")
-      .delete()
-      .in(
-        "user_id",
-        userTracker.users.map((user) => user.userId),
-      );
-
+    // The frames of the test users are removed by "on delete cascade" when the users are deleted.
     if (additionalOfficialFrameNames.length > 0) {
       await adminClient
         .from("canvas_frames")
