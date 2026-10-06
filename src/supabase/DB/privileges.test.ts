@@ -31,7 +31,10 @@ describe("privileges", () => {
         join pg_namespace as pgnsp on pgc.relnamespace = pgnsp.oid
         where relkind in ('r','v','m','p')
         and pgnsp.nspname = 'public'
-        and has_table_privilege('authenticated',pgc.oid,'select,insert,delete,update')
+        and has_table_privilege('authenticated',pgc.oid,'select')
+        and has_table_privilege('authenticated',pgc.oid,'insert')
+        and has_table_privilege('authenticated',pgc.oid,'delete')
+        and has_table_privilege('authenticated',pgc.oid,'update')
     `);
     expect(rows.length).toBe(2);
   });
