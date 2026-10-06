@@ -19,10 +19,6 @@ const PG_CHECK_VIOLATION = "23514";
 let firstUser: TestUser;
 let secondUser: TestUser;
 
-let laptop: Awaited<ReturnType<typeof getOfficialFrame>>;
-let desktopFhd: Awaited<ReturnType<typeof getOfficialFrame>>;
-let tablet: Awaited<ReturnType<typeof getOfficialFrame>>;
-
 const getOfficialFrame = async (client: TestUser["client"], name: string) => {
   const { data, error } = await client
     .from("canvas_frames")
@@ -42,13 +38,29 @@ beforeEach(async () => {
   userTracker.reset();
   firstUser = await userTracker.create();
   secondUser = await userTracker.create();
-  laptop = await getOfficialFrame(firstUser.client, "laptop");
-  desktopFhd = await getOfficialFrame(firstUser.client, "desktop_fhd");
-  tablet = await getOfficialFrame(firstUser.client, "tablet_portrait");
 });
 
 afterEach(async () => {
   await userTracker.deleteAll();
+});
+
+const frameUserTracker = helper.createTestUserTracker();
+
+type OfficialFrame = Awaited<ReturnType<typeof getOfficialFrame>>;
+
+let laptop: OfficialFrame;
+let desktopFhd: OfficialFrame;
+let tablet: OfficialFrame;
+
+beforeAll(async () => {
+  const frameReader = await frameUserTracker.create();
+  laptop = await getOfficialFrame(frameReader.client, "laptop");
+  desktopFhd = await getOfficialFrame(frameReader.client, "desktop_fhd");
+  tablet = await getOfficialFrame(frameReader.client, "tablet_portrait");
+});
+
+afterAll(async () => {
+  frameUserTracker.deleteAll();
 });
 
 describe("The snapshot trigger on INSERT", () => {
