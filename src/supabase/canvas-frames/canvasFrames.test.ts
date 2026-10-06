@@ -2,7 +2,7 @@ import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
 import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
 
 const helper = supabaseTestHelper();
-const { adminClient, insertOwnFrameOrThrow } = helper;
+const { insertOwnFrameOrThrow } = helper;
 const userTracker = helper.createTestUserTracker();
 const createAnonClient = () => helper.createAnonClient();
 
@@ -17,14 +17,11 @@ const OFFICIAL_PRESETS = [
 ];
 
 const PG_RLS_VIOLATION = "42501";
-const PG_UNIQUE_VIOLATION = "23505";
 const PG_CHECK_VIOLATION = "23514";
-const PG_RAISE_EXCEPTION = "P0001";
 
 // Launch the supabase DB before running this tests.
 let firstUser: TestUser;
 let secondUser: TestUser;
-let additionalOfficialFrameNames: string[];
 
 const createOwnFrame = (
   userId: string,
@@ -40,21 +37,11 @@ beforeEach(async () => {
   userTracker.reset();
   firstUser = await userTracker.create();
   secondUser = await userTracker.create();
-  additionalOfficialFrameNames = [];
 });
 
 afterEach(async () => {
-  try {
-    // The frames of the test users are removed by "on delete cascade" when the users are deleted.
-    if (additionalOfficialFrameNames.length > 0) {
-      await adminClient
-        .from("canvas_frames")
-        .delete()
-        .in("name", additionalOfficialFrameNames);
-    }
-  } finally {
-    await userTracker.deleteAll();
-  }
+  // The frames of the test users are removed by "on delete cascade" when the users are deleted.
+  await userTracker.deleteAll();
 });
 
 describe("The seed data of the official presets", () => {
@@ -142,7 +129,7 @@ describe("Is RLS working?", () => {
     // Official rows are visible but not updatable, so no row is affected.
     expect(data).toEqual([]);
 
-    const { data: official } = await adminClient
+    const { data: official } = await firstUser.client
       .from("canvas_frames")
       .select("width")
       .is("user_id", null)
@@ -162,82 +149,13 @@ describe("Is RLS working?", () => {
 
     expect(data).toEqual([]);
 
-    const { data: official } = await adminClient
+    const { data: official } = await firstUser.client
       .from("canvas_frames")
       .select("name")
       .is("user_id", null)
       .eq("name", "laptop");
 
     expect(official).toHaveLength(1);
-  });
-
-  it("should not let even the admin delete an official frame (the trigger rejects it)", async () => {
-    const { error } = await adminClient
-      .from("canvas_frames")
-      .delete()
-      .is("user_id", null)
-      .eq("name", "laptop");
-
-    expect(error?.code).toBe(PG_RAISE_EXCEPTION);
-    expect(error?.message).toContain(
-      "Change of the official frame is restricted",
-    );
-
-    const { data: official } = await adminClient
-      .from("canvas_frames")
-      .select("name")
-      .is("user_id", null)
-      .eq("name", "laptop");
-
-    expect(official).toHaveLength(1);
-  });
-
-  it.each([
-    ["width", { width: 1000 }],
-    ["name", { name: "laptop_renamed" }],
-  ])(
-    "should not let even the admin update %s of an official frame (the trigger rejects it)",
-    async (_label, change) => {
-      const { error } = await adminClient
-        .from("canvas_frames")
-        .update(change)
-        .is("user_id", null)
-        .eq("name", "laptop");
-
-      expect(error?.code).toBe(PG_RAISE_EXCEPTION);
-      expect(error?.message).toContain(
-        "Change of the official frame is restricted",
-      );
-
-      const { data: official } = await adminClient
-        .from("canvas_frames")
-        .select("width")
-        .is("user_id", null)
-        .eq("name", "laptop")
-        .single();
-
-      expect(official?.width).toBe(1440);
-    },
-  );
-
-  it("should let the admin update and delete a user's own frame (the restriction is limited to official frames)", async () => {
-    const inserted = await insertOwnFrameOrThrow(firstUser);
-
-    const { error: updateError } = await adminClient
-      .from("canvas_frames")
-      .update({ width: 1000 })
-      .eq("id", inserted.id);
-
-    expect(updateError).toBeNull();
-
-    const { data: deleted, error: deleteError } = await adminClient
-      .from("canvas_frames")
-      .delete()
-      .eq("id", inserted.id)
-      .select();
-
-    expect(deleteError).toBeNull();
-    expect(deleted).toHaveLength(1);
   });
 
   it("should not let a user update the other user's frame", async () => {
@@ -253,7 +171,7 @@ describe("Is RLS working?", () => {
     expect(error).toBeNull();
     expect(data).toEqual([]);
 
-    const { data: row } = await adminClient
+    const { data: row } = await firstUser.client
       .from("canvas_frames")
       .select("width")
       .eq("id", inserted.id)
@@ -274,7 +192,7 @@ describe("Is RLS working?", () => {
     expect(error).toBeNull();
     expect(data).toEqual([]);
 
-    const { data: rows } = await adminClient
+    const { data: rows } = await firstUser.client
       .from("canvas_frames")
       .select("id")
       .eq("id", inserted.id);
@@ -292,7 +210,7 @@ describe("Is RLS working?", () => {
 
     expect(error?.code).toBe(PG_RLS_VIOLATION);
 
-    const { data: row } = await adminClient
+    const { data: row } = await firstUser.client
       .from("canvas_frames")
       .select("user_id")
       .eq("id", inserted.id)
@@ -311,7 +229,7 @@ describe("Is RLS working?", () => {
 
     expect(error?.code).toBe(PG_RLS_VIOLATION);
 
-    const { data: row } = await adminClient
+    const { data: row } = await firstUser.client
       .from("canvas_frames")
       .select("user_id")
       .eq("id", inserted.id)
@@ -377,23 +295,6 @@ describe("The CHECK constraint of name", () => {
 });
 
 describe("The unique constraint of name", () => {
-  it("should reject a duplicated name among official frames", async () => {
-    const name = `official_${Date.now()}`;
-    additionalOfficialFrameNames.push(name);
-
-    const frame = { user_id: null, name, width: 800, height: 600 };
-
-    const { error: firstError } = await adminClient
-      .from("canvas_frames")
-      .insert(frame);
-    const { error: secondError } = await adminClient
-      .from("canvas_frames")
-      .insert(frame);
-
-    expect(firstError).toBeNull();
-    expect(secondError?.code).toBe(PG_UNIQUE_VIOLATION);
-  });
-
   it("should accept the same name for different users", async () => {
     const name = `shared_${Date.now()}`;
 

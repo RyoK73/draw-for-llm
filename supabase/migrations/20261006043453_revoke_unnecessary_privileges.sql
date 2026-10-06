@@ -1,0 +1,13 @@
+SET lock_timeout = '5s';
+
+REVOKE ALL ON TABLE public.sketches FROM anon;
+REVOKE TRUNCATE, REFERENCES, TRIGGER, MAINTAIN ON TABLE public.sketches FROM authenticated;
+REVOKE ALL ON TABLE public.sketches FROM service_role;
+
+REVOKE ALL ON TABLE public.canvas_frames FROM anon;
+REVOKE TRUNCATE, REFERENCES, TRIGGER, MAINTAIN ON TABLE public.canvas_frames FROM authenticated;
+REVOKE ALL ON TABLE public.canvas_frames FROM service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM service_role;

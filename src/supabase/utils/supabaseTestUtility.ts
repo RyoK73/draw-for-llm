@@ -27,6 +27,7 @@ const supabaseTestHelper = () => {
     });
   };
 
+  // The adminClient is used only for the auth admin API. The service_role has no privilege on the public tables.
   const adminClient = createTestClient("admin");
 
   const createAnonClient = (): ReturnType<typeof createClient<Database>> =>
@@ -140,7 +141,6 @@ const supabaseTestHelper = () => {
   };
 
   return {
-    adminClient,
     createAnonClient,
     createTestUser,
     deleteTestUser,

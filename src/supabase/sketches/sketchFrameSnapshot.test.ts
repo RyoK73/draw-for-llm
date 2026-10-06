@@ -8,19 +8,19 @@ import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import type { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 
 const helper = supabaseTestHelper();
-const { adminClient, insertOwnFrameOrThrow } = helper;
+const { insertOwnFrameOrThrow } = helper;
 const userTracker = helper.createTestUserTracker();
 
 const PG_NOT_NULL_VIOLATION = "23502";
 const PG_CHECK_VIOLATION = "23514";
 
 // Launch the supabase DB (with the seed data) before running this tests.
-// The official frames can't be changed even by the admin, so the seed data is used as it is.
+// The official frames can't be created by the tests, so the seed data is used as it is.
 let firstUser: TestUser;
 let secondUser: TestUser;
 
-const getOfficialFrame = async (name: string) => {
-  const { data, error } = await adminClient
+const getOfficialFrame = async (client: TestUser["client"], name: string) => {
+  const { data, error } = await client
     .from("canvas_frames")
     .select("id,width,height")
     .is("user_id", null)
@@ -44,10 +44,27 @@ afterEach(async () => {
   await userTracker.deleteAll();
 });
 
+const frameUserTracker = helper.createTestUserTracker();
+
+type OfficialFrame = Awaited<ReturnType<typeof getOfficialFrame>>;
+
+let laptop: OfficialFrame;
+let desktopFhd: OfficialFrame;
+let tablet: OfficialFrame;
+
+beforeAll(async () => {
+  const frameReader = await frameUserTracker.create();
+  laptop = await getOfficialFrame(frameReader.client, "laptop");
+  desktopFhd = await getOfficialFrame(frameReader.client, "desktop_fhd");
+  tablet = await getOfficialFrame(frameReader.client, "tablet_portrait");
+});
+
+afterAll(async () => {
+  await frameUserTracker.deleteAll();
+});
+
 describe("The snapshot trigger on INSERT", () => {
   it("should copy the size of an official frame when only frame_id is given", async () => {
-    const laptop = await getOfficialFrame("laptop");
-
     const sketch = await insertSketchOrThrow(firstUser, {
       frame_id: laptop.id,
     });
@@ -83,8 +100,6 @@ describe("The snapshot trigger on INSERT", () => {
   });
 
   it("should keep frame_id when frame_id and the matching size are given", async () => {
-    const laptop = await getOfficialFrame("laptop");
-
     const sketch = await insertSketchOrThrow(firstUser, {
       frame_id: laptop.id,
       width: laptop.width,
@@ -99,8 +114,6 @@ describe("The snapshot trigger on INSERT", () => {
   });
 
   it("should prefer the given size and set frame_id to null when they don't match", async () => {
-    const laptop = await getOfficialFrame("laptop");
-
     const sketch = await insertSketchOrThrow(firstUser, {
       frame_id: laptop.id,
       width: 800,
@@ -111,11 +124,8 @@ describe("The snapshot trigger on INSERT", () => {
   });
 
   it("should fill in desktop_fhd when nothing is given", async () => {
-    const desktopFhd = await getOfficialFrame("desktop_fhd");
-
     const sketch = await insertSketchOrThrow(firstUser);
 
-    expect(desktopFhd).toMatchObject({ width: 1920, height: 1080 });
     expect(sketch).toMatchObject({
       frame_id: desktopFhd.id,
       width: desktopFhd.width,
@@ -124,7 +134,6 @@ describe("The snapshot trigger on INSERT", () => {
   });
 
   it("should fill in the official desktop_fhd even if the user has an own frame with the same name", async () => {
-    const desktopFhd = await getOfficialFrame("desktop_fhd");
     const ownFrame = await insertOwnFrameOrThrow(firstUser, "desktop_fhd");
     const sketch = await insertSketchOrThrow(firstUser);
     expect(ownFrame.id).not.toBe(desktopFhd.id);
@@ -168,8 +177,6 @@ describe("The snapshot trigger on INSERT", () => {
 
 describe("The snapshot trigger on UPDATE", () => {
   it("should copy the size of the new frame when frame_id is changed", async () => {
-    const laptop = await getOfficialFrame("laptop");
-    const tablet = await getOfficialFrame("tablet_portrait");
     const sketch = await insertSketchOrThrow(firstUser, {
       frame_id: laptop.id,
     });
@@ -190,7 +197,6 @@ describe("The snapshot trigger on UPDATE", () => {
   });
 
   it("should set frame_id to null when only the size is changed", async () => {
-    const laptop = await getOfficialFrame("laptop");
     const sketch = await insertSketchOrThrow(firstUser, {
       frame_id: laptop.id,
     });
@@ -211,7 +217,6 @@ describe("The snapshot trigger on UPDATE", () => {
   });
 
   it("should detach the frame and keep the size when frame_id is set to null", async () => {
-    const laptop = await getOfficialFrame("laptop");
     const sketch = await insertSketchOrThrow(firstUser, {
       frame_id: laptop.id,
     });
@@ -232,7 +237,6 @@ describe("The snapshot trigger on UPDATE", () => {
   });
 
   it("should not change frame_id and the size when other columns are updated", async () => {
-    const laptop = await getOfficialFrame("laptop");
     const sketch = await insertSketchOrThrow(firstUser, {
       frame_id: laptop.id,
     });
@@ -255,7 +259,6 @@ describe("The snapshot trigger on UPDATE", () => {
 
   // upsert
   it("should update only the given columns on an upsert of an existing row", async () => {
-    const laptop = await getOfficialFrame("laptop");
     const sketch = await insertSketchOrThrow(firstUser, {
       frame_id: laptop.id,
     });
