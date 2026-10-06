@@ -25,6 +25,10 @@ describe("privileges", () => {
   });
 
   test("The authenticated role has `select,insert,delete,update` privileges", async () => {
+    const { rowCount } = await client.query(
+      `select * from information_schema.tables where table_schema = 'public'`,
+    );
+
     const { rows } = await client.query(`
         select pgc.oid,pgc.relkind,pgnsp.nspname,pgc.relname
         from pg_class as pgc
@@ -36,6 +40,6 @@ describe("privileges", () => {
         and has_table_privilege('authenticated',pgc.oid,'delete')
         and has_table_privilege('authenticated',pgc.oid,'update')
     `);
-    expect(rows.length).toBe(2);
+    expect(rows.length).toBe(rowCount);
   });
 });
