@@ -5,7 +5,7 @@ import {
 import consola from "consola";
 
 describe("Anonymous sign-in on the remote DB", () => {
-  test("external_anonymous_users_enabled shold be true", async () => {
+  test("external_anonymous_users_enabled should be true", async () => {
     const env = remoteEnvSchema.parse(process.env);
 
     const res = await fetch(
