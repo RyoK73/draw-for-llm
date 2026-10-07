@@ -15,8 +15,6 @@ describe("Anonymous sign-in on the remote DB", () => {
 
     expect(res.ok, `status: ${res.status}`).toBe(true);
     const config = authConfigSchema.parse(await res.json());
-    consola.info(config);
-    console.log(config);
     expect(config.external_anonymous_users_enabled).toBe(true);
   });
 });
