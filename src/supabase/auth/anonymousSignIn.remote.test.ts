@@ -1,7 +1,7 @@
 import {
   remoteEnvSchema,
   authConfigSchema,
-} from "@/supabase/auth/anonymousSignIn.remote.type";
+} from "@/supabase/auth/anonymousSignIn.remote.types";
 import consola from "consola";
 
 describe("Anonymous sign-in on the remote DB", () => {
