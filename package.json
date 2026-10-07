@@ -9,6 +9,7 @@
     "lint": "eslint",
     "check": "eslint && tsc --noEmit",
     "test": "vitest",
+    "test:remote": "vitest run --config vitest.remote.config.mts",
     "test:here": "exec vitest run $INIT_CWD",
     "dev": "pnpm tsx ./src/dev-scripts/open-localhost.ts",
     "db:version": "supabase --version",
