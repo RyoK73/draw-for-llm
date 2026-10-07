@@ -13,10 +13,9 @@ describe("Anonymous sign-in on the remote DB", () => {
       { headers: { Authorization: `Bearer ${env.SUPABASE_ACCESS_TOKEN}` } },
     );
 
-    expect(res.ok, `status: ${res.status}`).toBe(true);
-
     if (!res.ok) consola.error(await res.text());
 
+    expect(res.ok, `status: ${res.status}`).toBe(true);
     const config = authConfigSchema.parse(await res.json());
     expect(config.external_anonymous_users_enabled).toBe(true);
   });
