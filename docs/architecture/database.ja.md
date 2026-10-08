@@ -10,29 +10,29 @@ Supabase上のPostgresです。
 
 ユーザーが描いたスケッチです。
 
-| カラム           | 備考                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------- |
-| `id`             | uuid、主キー                                                                          |
-| `user_id`        | `auth.users`を参照します(`ON DELETE CASCADE`)。デフォルトは`auth.uid()`です。         |
-| `title`          | デフォルトは`'Untitled'`です。                                                        |
-| `description`    |                                                                                       |
-| `canvas_json`    | jsonb。fabricのキャンバスを`toJSON()`でシリアライズしたものです。デフォルトは`{}`です。 |
-| `fabric_version` | 保存時のfabricのバージョンです。                                                      |
-| `frame_id`       | `canvas_frames`を参照します(`ON DELETE SET NULL`)。                                   |
-| `width`, `height` | 320〜1920                                                                            |
-| `cell_size`      | デフォルトは20です。4〜200                                                            |
-| `created_at`, `updated_at` | `updated_at`は`trg_set_updated_at`トリガで設定されます。                    |
+| カラム                     | 備考                                                                                    |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| `id`                       | uuid、主キー                                                                            |
+| `user_id`                  | `auth.users`を参照します(`ON DELETE CASCADE`)。デフォルトは`auth.uid()`です。           |
+| `title`                    | デフォルトは`'Untitled'`です。                                                          |
+| `description`              |                                                                                         |
+| `canvas_json`              | jsonb。fabricのキャンバスを`toJSON()`でシリアライズしたものです。デフォルトは`{}`です。 |
+| `fabric_version`           | 保存時のfabricのバージョンです。                                                        |
+| `frame_id`                 | `canvas_frames`を参照します(`ON DELETE SET NULL`)。                                     |
+| `width`, `height`          | 320〜1920                                                                               |
+| `cell_size`                | デフォルトは20です。4〜200                                                              |
+| `created_at`, `updated_at` | `updated_at`は`trg_set_updated_at`トリガで設定されます。                                |
 
 ### `public.canvas_frames`
 
 スケッチが使用できるキャンバスのサイズ(フレーム)です。
 
-| カラム            | 備考                                                                                 |
-| ----------------- | ------------------------------------------------------------------------------------ |
-| `id`              | uuid、主キー                                                                         |
-| `user_id`         | `auth.users`を参照します(`ON DELETE CASCADE`)。`NULL`は公式プリセットを表します。    |
-| `name`            | 1〜100文字。空白のみは不可です。公式プリセットの名前は一意です。                     |
-| `width`, `height` | 320〜1920                                                                            |
+| カラム            | 備考                                                                              |
+| ----------------- | --------------------------------------------------------------------------------- |
+| `id`              | uuid、主キー                                                                      |
+| `user_id`         | `auth.users`を参照します(`ON DELETE CASCADE`)。`NULL`は公式プリセットを表します。 |
+| `name`            | 1〜100文字。空白のみは不可です。公式プリセットの名前は一意です。                  |
+| `width`, `height` | 320〜1920                                                                         |
 
 ### 公式フレーム
 
@@ -56,8 +56,6 @@ Supabase上のPostgresです。
 - `frame_id`のみが指定された場合は、フレームの幅と高さをコピーします。
 - `width`と`height`が指定された場合は、それを優先します。フレームと一致しなければ、`frame_id`を`NULL`にします。
 - insert時に`width`と`height`の片方だけを指定すると、エラーになります。
-
-公式フレームの変更は、現時点ではDB側で保護されていません(保護するトリガは削除されました)。
 
 ## Row Level Security
 

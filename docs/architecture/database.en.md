@@ -57,8 +57,6 @@ The `sketches_apply_frame` trigger runs before an insert, or before an update of
 - If `width` and `height` are specified, they take priority. If they do not match the frame, `frame_id` is set to `NULL`.
 - On insert, specifying only one of `width` and `height` is an error.
 
-Official frames are not protected from changes in the DB at present (the protecting trigger was dropped).
-
 ## Row Level Security
 
 - RLS is enabled on both tables.
