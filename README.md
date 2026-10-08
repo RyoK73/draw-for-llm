@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+English | [日本語](./README.ja.md)
 
-## Getting Started
+# Like-so - Sketch what words can't say.
 
-First, run the development server:
+A canvas for sketching an idea the moment it strikes and handing it straight to an LLM.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Why I built this
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Natural language is an excellent common language between humans and LLMs.
+Still, when we put subjective things like inspiration and imagery into words, the parts that resist verbalization tend to fall away.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For example, instead of explaining in text, "there's a sidebar on the left,
+and cards are lined up to its right...", sketching it in three seconds
+can be faster and more accurate.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project aims to cut that lag down to the minimum.
 
-## Learn More
+_Like-so_ is a tool for bringing pre-verbal ideas directly into a conversation with an LLM.
 
-To learn more about Next.js, take a look at the following resources:
+## What I value: simplicity and speed
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Figma, Canva, and Excalidraw are all excellent tools.
+_Like-so_ doesn't compete with them on feature count. Instead, it focuses on the simplicity and speed that tend to fade as tools grow more feature-rich.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Use cases
 
-## Deploy on Vercel
+- Draw a quick sketch of an app screen and pass it to an LLM as instructions.
+- Put a mockup image into a document or presentation.
+- Share the image of your idea with other people.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Philosophy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This philosophy comes from my own experience with editors.
+After moving from a feature-heavy editor to Vim, I felt what the tagline promises: _editing at the speed of thought_.
+Since then, I have added only the features I need, one at a time, keeping Vim simple while making it more comfortable to use.
+
+## Design principles
+
+- Simplicity matters in the design as much as in the features.
+- Database permissions and roles follow the principle of least privilege.
+  - The smaller the scope of each permission, the less room there is
+    for vulnerabilities and design mistakes.
+
+## For developers
+
+Setup, architecture and coding rules are in [`docs/`](./docs).
+
+- Setup
+  - [Prerequisites](./docs/setup/prerequisites.en.md)
+  - [Environment variables](./docs/setup/environment.en.md)
+  - [Database](./docs/setup/database.en.md)
+  - [Development](./docs/setup/development.en.md)
+- Architecture
+  - [Overview](./docs/architecture/overview.en.md)
+  - [Authentication](./docs/architecture/auth.en.md)
+  - [Database](./docs/architecture/database.en.md)
+  - [Saving sketches](./docs/architecture/save.en.md)
+- Rules
+  - [Directory structure](./docs/rules/directory-structure.en.md)
+  - [Naming](./docs/rules/naming.en.md)
+  - [TypeScript](./docs/rules/typescript.en.md)
