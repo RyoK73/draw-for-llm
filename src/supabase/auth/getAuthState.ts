@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
 
 type AuthState = "signedOut" | "guest" | "registered";
