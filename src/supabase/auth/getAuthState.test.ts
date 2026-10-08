@@ -9,7 +9,7 @@ vi.mock("@/supabase/utils/serverClient", () => ({
 const helper = supabaseTestHelper();
 const userTracker = helper.createTestUserTracker();
 
-// Launch the supabase DB before running this tests.
+// Launch the supabase DB before running these tests.
 // Call `signInAnonymously` only once per test because of the per-IP rate limit of anonymous sign-ins.
 let anonymousUserId: string | undefined;
 
