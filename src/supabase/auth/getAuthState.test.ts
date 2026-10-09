@@ -4,7 +4,6 @@ import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
 
 const helper = supabaseTestHelper();
 const userTracker = helper.createTestUserTracker();
-const client = helper.createAnonClient();
 
 // Launch the supabase DB before running these tests.
 // Call `signInAnonymously` only once per test because of the per-IP rate limit of anonymous sign-ins.
@@ -28,10 +27,12 @@ afterEach(async () => {
 
 describe("getAuthState", () => {
   it("should return signedOut when a client has no session", async () => {
+    const client = helper.createAnonClient();
     expect(await getAuthState(client)).toBe("signedOut");
   });
 
   it("should return guest when a client signs in anonymously", async () => {
+    const client = helper.createAnonClient();
     const { data, error } = await client.auth.signInAnonymously();
     // Keep the id before the assertions, so that the user is deleted even if an assertion fails.
     anonymousUserId = data.user?.id;
