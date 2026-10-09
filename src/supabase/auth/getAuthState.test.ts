@@ -14,7 +14,6 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  vi.resetAllMocks();
   await userTracker.deleteAll();
 
   if (!anonymousUserId) return;
