@@ -10,10 +10,10 @@
 
 - Prioritize meaningful cohesion (login, widgets, etc.) over technical concerns (component/hook/util/lib)
 
-| structure  | features                                                             | Pros                                                                 | Cons                                     |
-| ---------- | --------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
-| horizontal | Split by *technical kind*, e.g. `src/components,utils,hooks`          | Looks easy to understand at a glance                                  | References increase as code volume grows |
-| vertical   | Split by *what it does*                                               | Changes stay localized to one place, lowering cognitive load          | Can be hard to judge the right categorization |
+| structure  | features                                                     | Pros                                                         | Cons                                          |
+| ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |
+| horizontal | Split by _technical kind_, e.g. `src/components,utils,hooks` | Looks easy to understand at a glance                         | References increase as code volume grows      |
+| vertical   | Split by _what it does_                                      | Changes stay localized to one place, lowering cognitive load | Can be hard to judge the right categorization |
 
 ## `src/app/` is Routing Only
 
@@ -121,5 +121,5 @@ export { LoginForm } from "./login-form";
 
 ## Notes
 
-- Determining the *correct vertical name/classification* is not easy. Discuss with the team as needed
+- Determining the _correct vertical name/classification_ is not easy. Discuss with the team as needed
 - Dependencies need to be made explicit by operating this together with `index.ts`
