@@ -24,8 +24,10 @@ pnpm dev
 
 ## テスト
 
-- 先に`pnpm db:start`を実行してください。多くのテストがローカルのSupabaseに接続します。
-- `.env.local`が必要です。詳細は[環境変数](./environment.ja.md)を参照してください。
+- 先に`pnpm db:start`を実行してください。
+  多くのテストがローカルのSupabaseに接続します。
+- `.env.local`が必要です。
+  詳細は[環境変数](./environment.ja.md)を参照してください。
 - `pnpm test:remote`は、Supabase Management APIでリモートプロジェクトの設定を確認します。
   - `PROJECTID`と`SUPABASE_ACCESS_TOKEN`が必要です。
   - 現在は、匿名サインインが有効であることを確認しています。

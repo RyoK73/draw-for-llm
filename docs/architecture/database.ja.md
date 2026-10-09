@@ -54,7 +54,8 @@ Supabase上のPostgresです。
 
 - insert時に何も指定がなければ、`desktop_fhd`のフレームを適用します。
 - `frame_id`のみが指定された場合は、フレームの幅と高さをコピーします。
-- `width`と`height`が指定された場合は、それを優先します。フレームと一致しなければ、`frame_id`を`NULL`にします。
+- `width`と`height`が指定された場合は、それを優先します。
+- フレームと一致しなければ、`frame_id`を`NULL`にします。
 - insert時に`width`と`height`の片方だけを指定すると、エラーになります。
 
 ## Row Level Security
@@ -72,7 +73,8 @@ Supabase上のPostgresです。
 
 ## スキーマの変更手順
 
-1. `pnpm db:new`でマイグレーションを作成します。[データベースのセットアップ](../setup/database.ja.md)を参照してください。
+1. `pnpm db:new`でマイグレーションを作成します。
+   詳細は[データベースのセットアップ](../setup/database.ja.md)を参照してください。
 2. テーブルを変更するマイグレーションは、`SET lock_timeout = '5s'`から始めます。
 3. `pnpm type:gen-local`で型を再生成します。
 4. このドキュメントを更新します。

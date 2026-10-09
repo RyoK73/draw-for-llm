@@ -33,4 +33,5 @@ fabric "object:modified"
   - すべての関数が`Result<T>`(`src/utils/utility.types.ts`)を返します。
   - これらは純粋なCRUD関数です。
   - `upsertSketch`は、返った行数が1でない場合にエラーとなります。
-- `width`、`height`、`updated_at`は、DBのトリガが最終的に確定します。[データベース](./database.ja.md)を参照してください。
+- `width`、`height`、`updated_at`は、DBのトリガが最終的に確定します。
+  詳細は[データベース](./database.ja.md)を参照してください。
