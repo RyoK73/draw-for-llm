@@ -8,6 +8,7 @@ vi.mock("@/supabase/utils/serverClient", () => ({
 
 const helper = supabaseTestHelper();
 const userTracker = helper.createTestUserTracker();
+const client = helper.createAnonClient();
 
 // Launch the supabase DB before running these tests.
 // Call `signInAnonymously` only once per test because of the per-IP rate limit of anonymous sign-ins.
@@ -31,15 +32,12 @@ afterEach(async () => {
 
 describe("getAuthState", () => {
   it("should return signedOut when a client has no session", async () => {
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      helper.createAnonClient(),
-    );
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(client);
 
-    expect(await getAuthState()).toBe("signedOut");
+    expect(await getAuthState(client)).toBe("signedOut");
   });
 
   it("should return guest when a client signs in anonymously", async () => {
-    const client = helper.createAnonClient();
     const { data, error } = await client.auth.signInAnonymously();
     // Keep the id before the assertions, so that the user is deleted even if an assertion fails.
     anonymousUserId = data.user?.id;
@@ -47,22 +45,25 @@ describe("getAuthState", () => {
 
     vi.mocked(createSupabaseServerClient).mockResolvedValue(client);
 
-    expect(await getAuthState()).toBe("guest");
+    expect(await getAuthState(client)).toBe("guest");
   });
 
   it("should return registered when a client signs in as a permanent user", async () => {
     const user = await userTracker.create();
     vi.mocked(createSupabaseServerClient).mockResolvedValue(user.client);
 
-    expect(await getAuthState()).toBe("registered");
+    expect(await getAuthState(user.client)).toBe("registered");
   });
 
   it("should throw when getClaims returns an error", async () => {
-    const claimsError = new Error("getClaims failed");
-    vi.mocked(createSupabaseServerClient).mockResolvedValue({
-      auth: { getClaims: async () => ({ data: null, error: claimsError }) },
-    } as unknown as Awaited<ReturnType<typeof createSupabaseServerClient>>);
+    type ServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
-    await expect(getAuthState()).rejects.toThrow("getClaims failed");
+    const claimsError = new Error("getClaims failed");
+
+    const fakeClient = {
+      auth: { getClaims: async () => ({ data: null, error: claimsError }) },
+    } as unknown as ServerClient;
+
+    await expect(getAuthState(fakeClient)).rejects.toThrow("getClaims failed");
   });
 });
