@@ -22,7 +22,7 @@ _Like-so_ is a tool for bringing pre-verbal ideas directly into a conversation w
 Figma, Canva, and Excalidraw are all excellent tools.
 _Like-so_ doesn't compete with them on feature count. Instead, it focuses on the simplicity and speed that tend to fade as tools grow more feature-rich.
 
-## Use cases
+## Intended use cases
 
 - Draw a quick sketch of an app screen and pass it to an LLM as instructions.
 - Put a mockup image into a document or presentation.

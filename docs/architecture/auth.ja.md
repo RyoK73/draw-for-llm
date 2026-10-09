@@ -1,7 +1,7 @@
 # 認証
 
 認証にはSupabase Authを使用します。
-匿名サインインは有効です(`supabase/config.toml`の`enable_anonymous_sign_ins = true`)。
+匿名サインインが有効です(`supabase/config.toml`の`enable_anonymous_sign_ins = true`)。
 
 ## セッションの更新
 

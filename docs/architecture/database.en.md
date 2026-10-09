@@ -17,7 +17,7 @@ A sketch drawn by a user.
 | `title`                    | Defaults to `'Untitled'`                                                |
 | `description`              |                                                                         |
 | `canvas_json`              | jsonb. The fabric canvas serialized with `toJSON()`. Defaults to `{}`   |
-| `fabric_version`           | The fabric version used when saving                                     |
+| `fabric_version`           | The fabric version from package.json at save time                       |
 | `frame_id`                 | References `canvas_frames` (`ON DELETE SET NULL`)                       |
 | `width`, `height`          | 320 to 1920                                                             |
 | `cell_size`                | Defaults to 20. 4 to 200                                                |

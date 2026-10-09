@@ -17,7 +17,7 @@ Supabase上のPostgresです。
 | `title`                    | デフォルトは`'Untitled'`です。                                                          |
 | `description`              |                                                                                         |
 | `canvas_json`              | jsonb。fabricのキャンバスを`toJSON()`でシリアライズしたものです。デフォルトは`{}`です。 |
-| `fabric_version`           | 保存時のfabricのバージョンです。                                                        |
+| `fabric_version`           | 保存時のpackage.jsonのfabricのバージョンです。                                          |
 | `frame_id`                 | `canvas_frames`を参照します(`ON DELETE SET NULL`)。                                     |
 | `width`, `height`          | 320〜1920                                                                               |
 | `cell_size`                | デフォルトは20です。4〜200                                                              |
