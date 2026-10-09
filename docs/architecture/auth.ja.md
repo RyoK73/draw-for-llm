@@ -7,9 +7,20 @@
 
 - `src/proxy.ts`が、リクエストごとに`updateSession`(`src/supabase/auth/proxy.ts`)を実行します。
   - 静的ファイルと画像は`matcher`で除外されます。
-- `updateSession`は、Supabaseのサーバークライアントを作成し、Cookieを同期して、`auth.getClaims()`を呼びます。
-- claimsがなく、パスが`/signin`でも`/auth`でもない場合は、`/signin`へリダイレクトします。
-- `/signin`ルートは、まだ存在しません。
+- `updateSession`は、Supabaseのサーバークライアントを作成し、Cookieを同期します。
+  その後、同じクライアントを`getAuthState`に渡して認証状態を判定します。
+- 認証状態とパスに応じて、次のようにリダイレクトします。
+  パスは前方一致で判定します。
+  リダイレクト時も、更新したCookieを引き継ぎます。
+
+| 認証状態     | パス                | 動作                          |
+| ------------ | ------------------- | ----------------------------- |
+| `signedOut`  | `/sketches`で始まる | `/`へリダイレクトする         |
+| `registered` | `/signin`で始まる   | `/sketches`へリダイレクトする |
+| `registered` | `/signup`で始まる   | `/sketches`へリダイレクトする |
+| `guest`      | すべて              | リダイレクトしない            |
+
+- 上記以外の組み合わせは、リダイレクトしません。
 
 ## 認証状態
 
@@ -21,6 +32,8 @@
 | `guest`      | `is_anonymous` claimがtrue         |
 | `registered` | 匿名ではないユーザーがサインイン中 |
 
+- 引数でSupabaseクライアントを受け取ります。
+  `updateSession`が作成したCookie同期付きのクライアントを、そのまま使うためです。
 - `getClaims`がエラーを返したときは、throwしてNext.jsに処理を任せます。
 - `server-only`をimportしているため、サーバーでのみ使用できます。
 
