@@ -21,67 +21,67 @@ describe("SketchList", () => {
   });
 
   test("should render the title and description of each sketch in the given order", async () => {
+    const newerSketch = {
+      id: "id-2",
+      title: "second",
+      description: "newer description",
+      created_at: "2026-10-01T00:00:00Z",
+      updated_at: "2026-10-03T00:00:00Z",
+    };
+    const olderSketch = {
+      id: "id-1",
+      title: "first",
+      description: "older description",
+      created_at: "2026-10-01T00:00:00Z",
+      updated_at: "2026-10-02T00:00:00Z",
+    };
     vi.mocked(getSketchData).mockResolvedValue({
       ok: true,
-      value: [
-        {
-          id: "id-2",
-          title: "second",
-          description: "newer description",
-          created_at: "2026-10-01T00:00:00Z",
-          updated_at: "2026-10-03T00:00:00Z",
-        },
-        {
-          id: "id-1",
-          title: "first",
-          description: "older description",
-          created_at: "2026-10-01T00:00:00Z",
-          updated_at: "2026-10-02T00:00:00Z",
-        },
-      ],
+      value: [newerSketch, olderSketch],
     });
 
     await renderSketchList();
 
     const links = screen.getAllByRole("link");
     expect(links).toHaveLength(2);
-    expect(links[0]).toHaveTextContent("second");
-    expect(links[0]).toHaveTextContent("newer description");
-    expect(links[1]).toHaveTextContent("first");
-    expect(links[1]).toHaveTextContent("older description");
+    expect(links[0]).toHaveTextContent(newerSketch.title);
+    expect(links[0]).toHaveTextContent(newerSketch.description);
+    expect(links[1]).toHaveTextContent(olderSketch.title);
+    expect(links[1]).toHaveTextContent(olderSketch.description);
   });
 
   test("should link each sketch to /sketches/[id]", async () => {
+    const sketch = {
+      id: "id-1",
+      title: "first",
+      description: "description",
+      created_at: "2026-10-01T00:00:00Z",
+      updated_at: "2026-10-02T00:00:00Z",
+    };
     vi.mocked(getSketchData).mockResolvedValue({
       ok: true,
-      value: [
-        {
-          id: "id-1",
-          title: "first",
-          description: "description",
-          created_at: "2026-10-01T00:00:00Z",
-          updated_at: "2026-10-02T00:00:00Z",
-        },
-      ],
+      value: [sketch],
     });
 
     await renderSketchList();
 
-    expect(screen.getByRole("link")).toHaveAttribute("href", "/sketches/id-1");
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      `/sketches/${sketch.id}`,
+    );
   });
 
   test("should not render the description line when the description is empty", async () => {
+    const sketchWithoutDescription = {
+      id: "id-1",
+      title: "no description",
+      description: null,
+      created_at: "2026-10-01T00:00:00Z",
+      updated_at: "2026-10-02T00:00:00Z",
+    };
     vi.mocked(getSketchData).mockResolvedValue({
       ok: true,
-      value: [
-        {
-          id: "id-1",
-          title: "no description",
-          description: null,
-          created_at: "2026-10-01T00:00:00Z",
-          updated_at: "2026-10-02T00:00:00Z",
-        },
-      ],
+      value: [sketchWithoutDescription],
     });
 
     await renderSketchList();
