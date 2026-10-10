@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 const generateDateTimeOption = (
   timeZone: string = "UTC",
@@ -9,25 +9,29 @@ const generateDateTimeOption = (
   timeZone,
 });
 
+const subscribe = () => () => {};
+
 const LocalTime = ({ updatedAt }: { updatedAt: string }) => {
   const dateUpdatedAt = new Date(updatedAt);
-  const [dateTimeString, setDateTimeString] = useState<string>(() => {
-    return new Intl.DateTimeFormat("en-US", generateDateTimeOption()).format(
-      dateUpdatedAt,
-    );
-  });
 
-  useEffect(() => {
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const locale = Intl.DateTimeFormat().resolvedOptions().locale;
-    const userLocalTime = Intl.DateTimeFormat(
-      locale,
-      generateDateTimeOption(timeZone),
-    ).format(dateUpdatedAt);
-    setDateTimeString(userLocalTime);
-  }, []);
+  const dateTime = useSyncExternalStore(
+    subscribe,
+    () => {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+      return Intl.DateTimeFormat(
+        locale,
+        generateDateTimeOption(timeZone),
+      ).format(dateUpdatedAt);
+    },
+    () => {
+      return new Intl.DateTimeFormat("en-US", generateDateTimeOption()).format(
+        dateUpdatedAt,
+      );
+    },
+  );
 
-  return <time dateTime={updatedAt}>{dateTimeString}</time>;
+  return <time dateTime={updatedAt}>{dateTime}</time>;
 };
 
 export { LocalTime };
