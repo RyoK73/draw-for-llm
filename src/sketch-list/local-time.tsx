@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const dateTimeOption = (timeZone?: string): Intl.DateTimeFormatOptions => ({
+const generateDateTimeOption = (
+): Intl.DateTimeFormatOptions => ({
   dateStyle: "medium",
   timeStyle: "medium",
   timeZone,
@@ -10,7 +11,7 @@ const dateTimeOption = (timeZone?: string): Intl.DateTimeFormatOptions => ({
 const LocalTime = ({ updatedAt }: { updatedAt: string }) => {
   const dateUpdatedAt = new Date(updatedAt);
   const [dateTimeString, setDateTimeString] = useState<string>(() => {
-    return new Intl.DateTimeFormat("en-US", dateTimeOption()).format(
+    return new Intl.DateTimeFormat("en-US", generateDateTimeOption()).format(
       dateUpdatedAt,
     );
   });
@@ -20,7 +21,7 @@ const LocalTime = ({ updatedAt }: { updatedAt: string }) => {
     const locale = Intl.DateTimeFormat().resolvedOptions().locale;
     const userLocalTime = Intl.DateTimeFormat(
       locale,
-      dateTimeOption(timeZone),
+      generateDateTimeOption(timeZone),
     ).format(dateUpdatedAt);
     setDateTimeString(userLocalTime);
   }, []);
