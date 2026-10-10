@@ -14,7 +14,7 @@ type ReturnSketch = Database["public"]["Tables"]["sketches"]["Row"];
 
 type GetSketchData = Pick<
   Database["public"]["Tables"]["sketches"]["Row"],
-  "id" | "title" | "description" | "created_at"
+  "id" | "title" | "description" | "created_at" | "updated_at"
 >[];
 
 export type { GetSketchJson, InsertSketch, ReturnSketch, GetSketchData };

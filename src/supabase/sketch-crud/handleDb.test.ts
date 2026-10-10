@@ -2,7 +2,6 @@ import {
   getSketchJson,
   insertSketch,
   upsertSketch,
-  getSketchData,
 } from "@/supabase/sketch-crud/handleDb";
 import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
@@ -87,19 +86,6 @@ describe("Is RLS working?", () => {
     expect(getResult.ok).toBe(false);
   });
 
-  test("getSketchData should return an error when a client fetches by ANON_KEY", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
-      firstUser.client,
-    );
-
-    await insertSketch(sketchExample);
-
-    vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(anonClient);
-
-    const getResult = await getSketchData();
-
-    expect(getResult.ok).toBe(false);
-  });
   test("upsertSketch should return an error when a client fetches by ANON_KEY", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(anonClient);
 
@@ -142,7 +128,7 @@ describe("Is RLS working?", () => {
   });
 });
 
-describe("insertSketch,getSketchJson , and getSketchData should work for an authenticated user", () => {
+describe("insertSketch and getSketchJson should work for an authenticated user", () => {
   beforeEach(() => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
   });
@@ -199,33 +185,6 @@ describe("insertSketch,getSketchJson , and getSketchData should work for an auth
     const getResult = await getSketchJson("xxxxxxxxxxxxxxxx");
 
     expect(getResult.ok).toBe(false);
-  });
-
-  test("getSketchData should return { id, title, description, created_at }[]", async () => {
-    const sketches = [sketchExample, sketchExample];
-
-    const insertResults = sketches.map(
-      async (sketch) => await insertSketch(sketch),
-    );
-
-    await Promise.all(insertResults);
-
-    const sketchData = await getSketchData();
-
-    expect(sketchData.ok).toBe(true);
-    if (sketchData.ok) {
-      sketchData.value.map((data, index) => {
-        const {
-          canvas_json,
-          fabric_version,
-          user_id,
-          width,
-          height,
-          ...newSketch
-        } = sketches[index];
-        expect(data).toMatchObject(newSketch);
-      });
-    }
   });
 });
 
