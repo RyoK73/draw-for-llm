@@ -52,6 +52,7 @@ Setup, architecture and coding rules are in [`docs/`](./docs).
   - [Development](./docs/setup/development.en.md)
 - Architecture
   - [Overview](./docs/architecture/overview.en.md)
+  - [Routing](./docs/architecture/routing.en.md)
   - [Authentication](./docs/architecture/auth.en.md)
   - [Database](./docs/architecture/database.en.md)
   - [Saving sketches](./docs/architecture/save.en.md)
