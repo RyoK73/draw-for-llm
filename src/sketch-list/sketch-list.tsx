@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
 import { getSketchData } from "@/supabase/sketch-crud/getSketchData";
+import { LocalTime } from "@/sketch-list/local-time";
 
 const SketchList = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -28,14 +29,9 @@ const SketchList = async () => {
                 {sketch.description}
               </span>
             )}
-            <time
-              dateTime={sketch.updated_at ?? undefined}
-              className="text-sm text-zinc-500"
-            >
-              {sketch.updated_at
-                ? new Date(sketch.updated_at).toLocaleString("ja-JP")
-                : ""}
-            </time>
+            {sketch.updated_at ? (
+              <LocalTime updatedAt={sketch.updated_at} />
+            ) : null}
           </Link>
         </li>
       ))}

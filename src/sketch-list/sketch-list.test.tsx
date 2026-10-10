@@ -2,6 +2,9 @@ import { render, screen } from "@testing-library/react";
 import { SketchList } from "@/sketch-list/sketch-list";
 import { getSketchData } from "@/supabase/sketch-crud/getSketchData";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
+import { dateTimeTestHelper } from "@/sketch-list/testUtility";
+
+const { generateTestDateTime } = dateTimeTestHelper();
 
 vi.mock("@/supabase/utils/serverClient", () => ({
   createSupabaseServerClient: vi.fn(),
@@ -20,7 +23,7 @@ describe("SketchList", () => {
     );
   });
 
-  test("should render the title and description of each sketch in the given order", async () => {
+  test("should render the title, description, and updated_at of each sketch in the given order", async () => {
     const newerSketch = {
       id: "id-2",
       title: "second",
@@ -46,8 +49,14 @@ describe("SketchList", () => {
     expect(links).toHaveLength(2);
     expect(links[0]).toHaveTextContent(newerSketch.title);
     expect(links[0]).toHaveTextContent(newerSketch.description);
+    expect(links[0]).toHaveTextContent(
+      generateTestDateTime(new Date(newerSketch.updated_at)),
+    );
     expect(links[1]).toHaveTextContent(olderSketch.title);
     expect(links[1]).toHaveTextContent(olderSketch.description);
+    expect(links[1]).toHaveTextContent(
+      generateTestDateTime(new Date(olderSketch.updated_at)),
+    );
   });
 
   test("should link each sketch to /sketches/[id]", async () => {
