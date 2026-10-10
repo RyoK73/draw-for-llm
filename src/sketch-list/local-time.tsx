@@ -27,7 +27,7 @@ const LocalTime = ({ updatedAt }: { updatedAt: string }) => {
     setDateTimeString(userLocalTime);
   }, []);
 
-  return <time>{dateTimeString}</time>;
+  return <time dateTime={updatedAt}>{dateTimeString}</time>;
 };
 
 export { LocalTime };
