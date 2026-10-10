@@ -16,7 +16,7 @@ fabric "object:modified"
 | ------------------------------------------- | --------------------------------------------------------------------------------- |
 | `src/save-sketch/useSave.ts`                | 自動保存がオンのとき、`object:modified`で保存するフックです。                     |
 | `src/save-sketch/saveToDb.ts`               | キャンバスから行を組み立て、`upsertSketch`を呼びます。                            |
-| `src/supabase/sketch-crud/handleDb.ts`      | `getSketchJson`、`insertSketch`、`upsertSketch`、`getSketchData`                  |
+| `src/supabase/sketch-crud/handleDb.ts`      | `getSketchJson`、`insertSketch`、`upsertSketch`                                   |
 | `src/supabase/sketch-crud/serverUtility.ts` | `package.json`から`fabric`のバージョンを読むServer Action`getFabricVersion`です。 |
 
 ## 詳細

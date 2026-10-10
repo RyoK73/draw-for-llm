@@ -51,6 +51,7 @@ _Like-so_ は、機能の数で競いません。
   - [開発](./docs/setup/development.ja.md)
 - アーキテクチャ
   - [概要](./docs/architecture/overview.ja.md)
+  - [ルーティング](./docs/architecture/routing.ja.md)
   - [認証](./docs/architecture/auth.ja.md)
   - [データベース](./docs/architecture/database.ja.md)
   - [スケッチの保存](./docs/architecture/save.ja.md)
