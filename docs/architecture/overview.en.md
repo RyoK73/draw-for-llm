@@ -24,6 +24,7 @@ See [Directory structure](../rules/directory-structure.en.md) for the rule.
 | `src/proxy.ts`     | Next.js proxy. Refreshes the auth session on each request |
 | `src/draw/`        | Canvas, shapes and undo/redo history built on fabric.js   |
 | `src/save-sketch/` | Saving a sketch to the DB                                 |
+| `src/sketch-list/` | Showing the sketch list (Server Component)                |
 | `src/supabase/`    | Supabase clients, auth, CRUD and DB tests                 |
 | `src/utils/`       | Shared types                                              |
 | `src/dev-scripts/` | Scripts for development                                   |

@@ -12,12 +12,13 @@ fabric "object:modified"
 
 ## Files
 
-| File                                        | Role                                                                                 |
-| ------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `src/save-sketch/useSave.ts`                | Hook that saves on `object:modified` when auto-save is on                            |
-| `src/save-sketch/saveToDb.ts`               | Builds the row from the canvas and calls `upsertSketch`                              |
-| `src/supabase/sketch-crud/handleDb.ts`      | `getSketchJson`, `insertSketch`, `upsertSketch`, `getSketchData`                     |
-| `src/supabase/sketch-crud/serverUtility.ts` | Server action `getFabricVersion` that reads the `fabric` version from `package.json` |
+| File                                        | Role                                                                                  |
+| ------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `src/save-sketch/useSave.ts`                | Hook that saves on `object:modified` when auto-save is on                             |
+| `src/save-sketch/saveToDb.ts`               | Builds the row from the canvas and calls `upsertSketch`                               |
+| `src/supabase/sketch-crud/handleDb.ts`      | `getSketchJson`, `insertSketch`, `upsertSketch`                                       |
+| `src/supabase/sketch-crud/getSketchData.ts` | Server only. Gets the sketch list without `canvas_json`, ordered by `updated_at` desc |
+| `src/supabase/sketch-crud/serverUtility.ts` | Server action `getFabricVersion` that reads the `fabric` version from `package.json`  |
 
 ## Details
 
