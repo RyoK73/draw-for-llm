@@ -1,6 +1,6 @@
 import "server-only";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { GetSketchData } from "@/supabase/sketch-crud/handleDb.types";
+import { GetSketchData } from "@/supabase/sketch-crud/getSketchData.types";
 import { Result } from "@/utils/utility.types";
 
 // Get the sketch list in descending order of updated_at. It does not select canvas_json.
