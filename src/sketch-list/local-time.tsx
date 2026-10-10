@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 
 const generateDateTimeOption = (
+  timeZone: string = "UTC",
 ): Intl.DateTimeFormatOptions => ({
   dateStyle: "medium",
   timeStyle: "medium",
