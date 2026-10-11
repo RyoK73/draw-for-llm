@@ -1,7 +1,7 @@
 import { getSketchData } from "@/supabase/sketch-crud/getSketchData";
-import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
 import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
+import { version } from "fabric";
 
 const helper = supabaseTestHelper();
 const userTracker = helper.createTestUserTracker();
@@ -16,7 +16,7 @@ const insertSketchOrThrow = async (user: TestUser, title: string) => {
       canvas_json: "test",
       description: `description of ${title}`,
       title,
-      fabric_version: getFabricVersion(),
+      fabric_version: version,
       width: 800,
       height: 600,
     })

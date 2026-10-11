@@ -1,7 +1,6 @@
 import { upsertSketch } from "@/supabase/sketch-crud/handleDb";
 import { saveToDb } from "@/save-sketch/saveToDb";
-import { Canvas } from "fabric";
-import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
+import { Canvas, version } from "fabric";
 import { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 import { CanvasFrame } from "@/save-sketch/saveToDb.types";
 
@@ -17,7 +16,6 @@ const canvas = new Canvas();
 
 describe("saveToDb", () => {
   const testTitle = "Test Title";
-  const fabricVersion = getFabricVersion();
   const testFrame: CanvasFrame = {
     width: 1920,
     height: 1080,
@@ -29,7 +27,7 @@ describe("saveToDb", () => {
     const validArgument: InsertSketch = {
       title: testTitle,
       canvas_json: canvas.toJSON(),
-      fabric_version: fabricVersion,
+      fabric_version: version,
       width: testFrame.width,
       height: testFrame.height,
       frame_id: testFrame.frame_id,
@@ -88,7 +86,7 @@ describe("saveToDb", () => {
       value: {
         canvas_json: "test json",
         title: testTitle,
-        fabric_version: fabricVersion,
+        fabric_version: version,
         created_at: Date.now().toString(),
         description: null,
         cell_size: 32,

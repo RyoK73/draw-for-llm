@@ -3,11 +3,11 @@ import {
   insertSketch,
   upsertSketch,
 } from "@/supabase/sketch-crud/handleDb";
-import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
 import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import type { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
+import { version } from "fabric";
 
 const helper = supabaseTestHelper();
 const { createAnonClient, insertOwnFrameOrThrow } = helper;
@@ -17,7 +17,7 @@ const createTestSketch = (userId: string | undefined): InsertSketch => ({
   canvas_json: "test",
   description: "this is test",
   title: "sketchExample",
-  fabric_version: getFabricVersion(),
+  fabric_version: version,
   user_id: userId,
   width: 800,
   height: 600,
