@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getFabricVersion } from "@/supabase/sketch-crud/serverUtility";
+import { version } from "fabric";
 
 type CanvasJson = {
   version: string;
@@ -12,13 +12,11 @@ type History = {
   past: CanvasJson[];
 };
 
-const fabricVersion = getFabricVersion();
-
 const useHistory = () => {
   const [history, setHistory] = useState<History>({
     future: [],
     present: {
-      version: fabricVersion,
+      version,
       objects: [],
     },
     past: [],
