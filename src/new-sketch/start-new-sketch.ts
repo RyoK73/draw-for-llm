@@ -20,6 +20,7 @@ const startNewSketch = async (
   if ((await getAuthState(supabaseClient)) === "signedOut") {
     const signInResult = await signInAnonymously(supabaseClient);
     if (!signInResult.ok) {
+      // TODO(#71): Log `signInResult.error` on the server.
       return { error: "サインインに失敗しました。" };
     }
   }
@@ -31,6 +32,7 @@ const startNewSketch = async (
     fabric_version: version,
   } as InsertSketch);
   if (!upsertResult.ok) {
+    // TODO(#71): Log `upsertResult.error` on the server.
     return { error: "スケッチの作成に失敗しました。" };
   }
 
