@@ -1,6 +1,7 @@
 import { Canvas, version } from "fabric";
 import { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 import { upsertSketch } from "@/supabase/sketch-crud/handleDb";
+import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { SketchInfo, CanvasFrame } from "@/save-sketch/saveToDb.types";
 
 const saveToDb = async (
@@ -18,7 +19,10 @@ const saveToDb = async (
   };
   if (sketchId) sketch.id = sketchId;
 
-  const upsertResult = await upsertSketch(sketch);
+  const upsertResult = await upsertSketch(
+    createSupabaseBrowserClient(),
+    sketch,
+  );
   return upsertResult;
 };
 

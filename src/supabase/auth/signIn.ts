@@ -1,3 +1,4 @@
+import { SupabaseClient } from "@supabase/supabase-js";
 import { Result } from "@/utils/utility.types";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { updateUser } from "@/supabase/auth/utility";
@@ -34,8 +35,9 @@ const verifyOTP = async (
   return { ok: true, value: undefined };
 };
 
-const signInAnonymously = async (): Promise<Result<void>> => {
-  const supabaseClient = createSupabaseBrowserClient();
+const signInAnonymously = async (
+  supabaseClient: SupabaseClient,
+): Promise<Result<void>> => {
   const { error: anonymouslySignInError } =
     await supabaseClient.auth.signInAnonymously();
 

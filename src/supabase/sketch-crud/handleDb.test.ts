@@ -59,11 +59,9 @@ describe("Is RLS working?", () => {
   });
 
   test("upsertSketch should return an error when a client fetches by ANON_KEY", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(anonClient);
+    const upsertResult = await upsertSketch(anonClient, sketchExample);
 
-    const upsertSketch = await insertSketch(sketchExample);
-
-    expect(upsertSketch.ok).toBe(false);
+    expect(upsertResult.ok).toBe(false);
   });
 
   test("upsertSketch should throw an error when the user upserts with the other user's id", async () => {
@@ -132,9 +130,27 @@ describe("insertSketch should work for an authenticated user", () => {
 });
 
 describe("upsertSketch", () => {
+  it("should create an empty sketch with the default values when only fabric_version is given", async () => {
+    const upsertResult = await upsertSketch(firstUser.client, {
+      fabric_version: version,
+    } as InsertSketch);
+
+    if (!upsertResult.ok) {
+      throw new Error(upsertResult.error?.message);
+    }
+
+    expect(upsertResult.value).toMatchObject({
+      user_id: firstUser.userId,
+      title: "Untitled",
+      canvas_json: {},
+      width: 1920,
+      height: 1080,
+    });
+  });
+
   it("should insert sketch and return an id when user upserts without id", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
-    const upsertResult = await upsertSketch(sketchExample);
+    const upsertResult = await upsertSketch(firstUser.client, sketchExample);
 
     expect(upsertResult.ok).toBe(true);
 
@@ -160,7 +176,10 @@ describe("upsertSketch", () => {
       title: changedTitle,
     };
 
-    const upsertResult = await upsertSketch(updatedSketchExample);
+    const upsertResult = await upsertSketch(
+      firstUser.client,
+      updatedSketchExample,
+    );
 
     expect(upsertResult.ok).toBe(true);
 
@@ -178,7 +197,7 @@ describe("upsertSketch", () => {
   it("should save and return width, height, cell_size and frame_id when upsertSketch inserts with them", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
 
-    const upsertResult = await upsertSketch({
+    const upsertResult = await upsertSketch(firstUser.client, {
       ...sketchExample,
       width: frame.width,
       height: frame.height,
@@ -220,7 +239,7 @@ describe("upsertSketch", () => {
       throw new Error(insertResult.error?.message);
     }
 
-    const upsertResult = await upsertSketch({
+    const upsertResult = await upsertSketch(firstUser.client, {
       ...sketchExample,
       id: insertResult.value.id,
       width: secondFrame.width,

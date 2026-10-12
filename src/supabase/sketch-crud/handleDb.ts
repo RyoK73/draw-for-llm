@@ -2,6 +2,7 @@ import {
   InsertSketch,
   ReturnSketch,
 } from "@/supabase/sketch-crud/handleDb.types";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { Result } from "@/utils/utility.types";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 
@@ -30,9 +31,9 @@ const insertSketch = async (
 };
 
 const upsertSketch = async (
+  supabaseClient: SupabaseClient,
   sketch: InsertSketch,
 ): Promise<Result<ReturnSketch>> => {
-  const supabaseClient = createSupabaseBrowserClient();
   const { data, error } = await supabaseClient
     .from("sketches")
     .upsert(sketch)
