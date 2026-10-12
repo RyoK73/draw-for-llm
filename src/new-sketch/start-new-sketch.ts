@@ -26,7 +26,7 @@ const startNewSketch = async (
 
   // Do not pass `id`, so that this always inserts a new row.
   // width and height are filled in by the trigger (desktop_fhd), so they are omitted on purpose.
-  // TODO: Remove the cast to `InsertSketch` when the frame-size selection is implemented. This implementation is temporary.
+  // TODO(#68): Remove the cast to `InsertSketch` when the frame selection UI is implemented. This implementation is temporary.
   const upsertResult = await upsertSketch(supabaseClient, {
     fabric_version: version,
   } as InsertSketch);
