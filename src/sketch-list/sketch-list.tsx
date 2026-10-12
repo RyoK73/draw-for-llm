@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
 import { getSketchList } from "@/supabase/sketch-crud/getSketchList";
-import { LocalTime } from "@/sketch-list/local-time";
+import { LocalTime } from "@/design-system/local-time";
 
 const SketchList = async () => {
   const supabaseClient = await createSupabaseServerClient();

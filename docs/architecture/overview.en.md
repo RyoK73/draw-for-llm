@@ -40,11 +40,15 @@ See [Directory structure](../rules/directory-structure.en.md) for the rule.
 
 ## Sketch list (`src/sketch-list/`)
 
-| File              | Role                                                                |
-| ----------------- | ------------------------------------------------------------------- |
-| `sketch-list.tsx` | Server Component. Renders the list from `getSketchData`             |
-| `local-time.tsx`  | Client Component. Shows `updated_at` in a `<time dateTime>` element |
-| `index.ts`        | Exports only `SketchList`                                           |
+| File              | Role                                                    |
+| ----------------- | ------------------------------------------------------- |
+| `sketch-list.tsx` | Server Component. Renders the list from `getSketchList` |
+| `index.ts`        | Exports `SketchList`                                    |
+
+## Date and time (`src/design-system/local-time.tsx`)
+
+`LocalTime` is a Client Component.
+It shows `updated_at` in a `<time dateTime>` element.
 
 `LocalTime` renders differently depending on where it runs.
 It uses `useSyncExternalStore` to avoid a hydration mismatch.

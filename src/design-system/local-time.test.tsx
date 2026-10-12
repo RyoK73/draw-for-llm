@@ -1,4 +1,4 @@
-import { LocalTime } from "@/sketch-list/local-time";
+import { LocalTime } from "@/design-system/local-time";
 import { render, screen } from "@testing-library/react";
 import { dateTimeTestHelper } from "@/sketch-list/testUtility";
 

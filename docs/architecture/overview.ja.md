@@ -40,12 +40,15 @@
 
 ## スケッチ一覧(`src/sketch-list/`)
 
-| ファイル          | 役割                                                            |
-| ----------------- | --------------------------------------------------------------- |
-| `sketch-list.tsx` | Server Component。`getSketchData`で取得した一覧を描画します。   |
-| `local-time.tsx`  | Client Component。`updated_at`を`<time dateTime>`で表示します。 |
-| `index.ts`        | 公開するのは`SketchList`のみです。                              |
+| ファイル          | 役割                                                          |
+| ----------------- | ------------------------------------------------------------- |
+| `sketch-list.tsx` | Server Component。`getSketchList`で取得した一覧を描画します。 |
+| `index.ts`        | 公開するのは`SketchList`です。                                |
 
+## 日時表示(`src/design-system/local-time.tsx`)
+
+`LocalTime`は、Client Componentです。
+`updated_at`を`<time dateTime>`で表示します。
 `LocalTime`の表示は、描画の場面によって次のように異なります。
 `useSyncExternalStore`を使い、ハイドレーションの不一致を避けています。
 
