@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { SketchList } from "@/sketch-list/sketch-list";
-import { getSketchData } from "@/supabase/sketch-crud/getSketchData";
+import { getSketchList } from "@/supabase/sketch-crud/getSketchList";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
 import { dateTimeTestHelper } from "@/sketch-list/testUtility";
 
@@ -9,8 +9,8 @@ const { generateTestDateTime } = dateTimeTestHelper();
 vi.mock("@/supabase/utils/serverClient", () => ({
   createSupabaseServerClient: vi.fn(),
 }));
-vi.mock("@/supabase/sketch-crud/getSketchData", () => ({
-  getSketchData: vi.fn(),
+vi.mock("@/supabase/sketch-crud/getSketchList", () => ({
+  getSketchList: vi.fn(),
 }));
 
 const renderSketchList = async () => render(await SketchList());
@@ -38,7 +38,7 @@ describe("SketchList", () => {
       created_at: "2026-10-01T00:00:00Z",
       updated_at: "2026-10-02T00:00:00Z",
     };
-    vi.mocked(getSketchData).mockResolvedValue({
+    vi.mocked(getSketchList).mockResolvedValue({
       ok: true,
       value: [newerSketch, olderSketch],
     });
@@ -67,7 +67,7 @@ describe("SketchList", () => {
       created_at: "2026-10-01T00:00:00Z",
       updated_at: "2026-10-02T00:00:00Z",
     };
-    vi.mocked(getSketchData).mockResolvedValue({
+    vi.mocked(getSketchList).mockResolvedValue({
       ok: true,
       value: [sketch],
     });
@@ -88,7 +88,7 @@ describe("SketchList", () => {
       created_at: "2026-10-01T00:00:00Z",
       updated_at: "2026-10-02T00:00:00Z",
     };
-    vi.mocked(getSketchData).mockResolvedValue({
+    vi.mocked(getSketchList).mockResolvedValue({
       ok: true,
       value: [sketchWithoutDescription],
     });
@@ -100,7 +100,7 @@ describe("SketchList", () => {
   });
 
   test("should render a message when there are no sketches", async () => {
-    vi.mocked(getSketchData).mockResolvedValue({ ok: true, value: [] });
+    vi.mocked(getSketchList).mockResolvedValue({ ok: true, value: [] });
 
     await renderSketchList();
 
@@ -109,7 +109,7 @@ describe("SketchList", () => {
   });
 
   test("should render an error message when fetching fails", async () => {
-    vi.mocked(getSketchData).mockResolvedValue({
+    vi.mocked(getSketchList).mockResolvedValue({
       ok: false,
       error: new Error("test error"),
     });

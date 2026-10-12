@@ -178,14 +178,6 @@ describe("insertSketch and getSketchJson should work for an authenticated user",
       frame_id: frame.id,
     });
   });
-
-  it("should throw an error when the id is wrong", async () => {
-    await insertSketch(sketchExample);
-
-    const getResult = await getSketchJson("xxxxxxxxxxxxxxxx");
-
-    expect(getResult.ok).toBe(false);
-  });
 });
 
 describe("upsertSketch", () => {

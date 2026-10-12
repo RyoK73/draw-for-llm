@@ -19,15 +19,15 @@ See [Overview](./overview.en.md) for the components.
 
 ### Fetching
 
-- `SketchList` passes a client made by `createSupabaseServerClient` to `getSketchData` (`src/supabase/sketch-crud/getSketchData.ts`).
-- `getSketchData` is server only (`server-only`).
+- `SketchList` passes a client made by `createSupabaseServerClient` to `getSketchList` (`src/supabase/sketch-crud/getSketchList.ts`).
+- `getSketchList` is server only (`server-only`).
 - It gets `id`, `title`, `description`, `created_at` and `updated_at`.
   It does not get `canvas_json`.
 - It orders the rows by `updated_at` descending.
-- `getSketchData` itself has no filter by `user_id`.
+- `getSketchList` itself has no filter by `user_id`.
   The RLS of the `sketches` table (`auth.uid() = user_id`) returns only the rows of the signed-in user.
   See [Database](./database.en.md).
-- `getSketchData` returns `Result<T>` (`src/utils/utility.types.ts`).
+- `getSketchList` returns `Result<T>` (`src/utils/utility.types.ts`).
 
 ### Display
 

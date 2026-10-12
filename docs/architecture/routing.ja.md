@@ -19,15 +19,15 @@
 
 ### 取得
 
-- `SketchList`は、`createSupabaseServerClient`で作成したクライアントを`getSketchData`(`src/supabase/sketch-crud/getSketchData.ts`)に渡します。
-- `getSketchData`はサーバー専用(`server-only`)です。
+- `SketchList`は、`createSupabaseServerClient`で作成したクライアントを`getSketchList`(`src/supabase/sketch-crud/getSketchList.ts`)に渡します。
+- `getSketchList`はサーバー専用(`server-only`)です。
 - `id`、`title`、`description`、`created_at`、`updated_at`を取得します。
   `canvas_json`は取得しません。
 - `updated_at`の降順に並べます。
-- `getSketchData`自体には、`user_id`による絞り込みがありません。
+- `getSketchList`自体には、`user_id`による絞り込みがありません。
   `sketches`テーブルのRLS(`auth.uid() = user_id`)により、ログイン中のユーザーの行だけが返ります。
   詳細は[データベース](./database.ja.md)を参照してください。
-- `getSketchData`は`Result<T>`を返します(`src/utils/utility.types.ts`)。
+- `getSketchList`は`Result<T>`を返します(`src/utils/utility.types.ts`)。
 
 ### 表示
 
