@@ -1,8 +1,4 @@
-import {
-  getSketchJson,
-  insertSketch,
-  upsertSketch,
-} from "@/supabase/sketch-crud/handleDb";
+import { insertSketch, upsertSketch } from "@/supabase/sketch-crud/handleDb";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
 import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
@@ -62,36 +58,10 @@ describe("Is RLS working?", () => {
     expect(insertResult.ok).toBe(false);
   });
 
-  test("getSketchJson should return an error when a client fetches by ANON_KEY", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(
-      firstUser.client,
-    );
-
-    const insertResult = await insertSketch(sketchExample);
-
-    if (!insertResult.ok) {
-      throw new Error(insertResult.error?.message);
-    }
-
-    expect(insertResult.value.canvas_json).toEqual(sketchExample.canvas_json);
-
-    if (!insertResult.value.id) {
-      throw new Error(`Unexpected: id is undefined.`);
-    }
-
-    vi.mocked(createSupabaseBrowserClient).mockReturnValueOnce(anonClient);
-
-    const getResult = await getSketchJson(insertResult.value.id);
-
-    expect(getResult.ok).toBe(false);
-  });
-
   test("upsertSketch should return an error when a client fetches by ANON_KEY", async () => {
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(anonClient);
+    const upsertResult = await upsertSketch(anonClient, sketchExample);
 
-    const upsertSketch = await insertSketch(sketchExample);
-
-    expect(upsertSketch.ok).toBe(false);
+    expect(upsertResult.ok).toBe(false);
   });
 
   test("upsertSketch should throw an error when the user upserts with the other user's id", async () => {
@@ -122,40 +92,19 @@ describe("Is RLS working?", () => {
       title: maliciousTitle,
     };
 
-    const maliciousUpsertResult = await upsertSketch(maliciousSketchExample);
+    const maliciousUpsertResult = await upsertSketch(
+      secondUser.client,
+      maliciousSketchExample,
+    );
 
     expect(maliciousUpsertResult.ok).toBe(false); // RLS Error
   });
 });
 
-describe("insertSketch and getSketchJson should work for an authenticated user", () => {
+describe("insertSketch should work for an authenticated user", () => {
   beforeEach(() => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
   });
-  it("should be able to Insert a Json and get a Json that inserted", async () => {
-    const insertResult = await insertSketch(sketchExample);
-
-    if (!insertResult.ok) {
-      throw new Error(insertResult.error?.message);
-    }
-
-    expect(insertResult.ok).toBe(true);
-
-    expect(insertResult.value.canvas_json).toEqual(sketchExample.canvas_json);
-
-    if (!insertResult.value.id) {
-      throw new Error(`Unexpected: id is undefined.`);
-    }
-
-    const getResult = await getSketchJson(insertResult.value.id);
-
-    if (!getResult.ok) {
-      throw new Error(getResult.error?.message);
-    }
-
-    expect(getResult.value).toEqual(sketchExample.canvas_json);
-  });
-
   it("should save and return width, height, cell_size and frame_id when insertSketch is called with them", async () => {
     const sketch: InsertSketch = {
       ...sketchExample,
@@ -178,20 +127,30 @@ describe("insertSketch and getSketchJson should work for an authenticated user",
       frame_id: frame.id,
     });
   });
-
-  it("should throw an error when the id is wrong", async () => {
-    await insertSketch(sketchExample);
-
-    const getResult = await getSketchJson("xxxxxxxxxxxxxxxx");
-
-    expect(getResult.ok).toBe(false);
-  });
 });
 
 describe("upsertSketch", () => {
+  it("should create an empty sketch with the default values when only fabric_version is given", async () => {
+    const upsertResult = await upsertSketch(firstUser.client, {
+      fabric_version: version,
+    } as InsertSketch);
+
+    if (!upsertResult.ok) {
+      throw new Error(upsertResult.error?.message);
+    }
+
+    expect(upsertResult.value).toMatchObject({
+      user_id: firstUser.userId,
+      title: "Untitled",
+      canvas_json: {},
+      width: 1920,
+      height: 1080,
+    });
+  });
+
   it("should insert sketch and return an id when user upserts without id", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
-    const upsertResult = await upsertSketch(sketchExample);
+    const upsertResult = await upsertSketch(firstUser.client, sketchExample);
 
     expect(upsertResult.ok).toBe(true);
 
@@ -217,7 +176,10 @@ describe("upsertSketch", () => {
       title: changedTitle,
     };
 
-    const upsertResult = await upsertSketch(updatedSketchExample);
+    const upsertResult = await upsertSketch(
+      firstUser.client,
+      updatedSketchExample,
+    );
 
     expect(upsertResult.ok).toBe(true);
 
@@ -235,7 +197,7 @@ describe("upsertSketch", () => {
   it("should save and return width, height, cell_size and frame_id when upsertSketch inserts with them", async () => {
     vi.mocked(createSupabaseBrowserClient).mockReturnValue(firstUser.client);
 
-    const upsertResult = await upsertSketch({
+    const upsertResult = await upsertSketch(firstUser.client, {
       ...sketchExample,
       width: frame.width,
       height: frame.height,
@@ -277,7 +239,7 @@ describe("upsertSketch", () => {
       throw new Error(insertResult.error?.message);
     }
 
-    const upsertResult = await upsertSketch({
+    const upsertResult = await upsertSketch(firstUser.client, {
       ...sketchExample,
       id: insertResult.value.id,
       width: secondFrame.width,

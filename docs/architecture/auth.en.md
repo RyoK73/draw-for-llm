@@ -39,8 +39,10 @@ Anonymous sign-in is enabled (`enable_anonymous_sign_ins = true` in `supabase/co
 
 ## Sign-in functions
 
-Defined in `src/supabase/auth/` and use the browser client.
+Defined in `src/supabase/auth/`.
 Each returns `Result<void>`.
+`signInAnonymously` takes a Supabase client as an argument.
+The others use the browser client.
 
 | Function                              | What it does                                            |
 | ------------------------------------- | ------------------------------------------------------- |
@@ -49,6 +51,17 @@ Each returns `Result<void>`.
 | `signInAnonymously`                   | Signs in as an anonymous user                           |
 | `convertAnonymousUserToPermanentUser` | Adds an email to an anonymous user to make it permanent |
 | `signOut`                             | Signs out                                               |
+
+## Anonymous sign-in in a Server Action
+
+`startNewSketch` for creating a sketch signs in anonymously inside a Server Action when the state is `signedOut`.
+See [Routing](./routing.en.md).
+
+- To put the cookies of the new session in the response, it uses `createSupabaseActionClient` (`src/supabase/utils/actionClient.ts`).
+  This client can read and write cookies.
+- `createSupabaseServerClient` (`src/supabase/utils/serverClient.ts`) only reads cookies.
+  Use it in Server Components.
+  `proxy.ts` refreshes the tokens.
 
 ## Test setup
 

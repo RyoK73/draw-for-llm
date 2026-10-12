@@ -6,11 +6,8 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
 });
 
-type GetSketchJson =
-  Database["public"]["Tables"]["sketches"]["Row"]["canvas_json"];
-
 type InsertSketch = Database["public"]["Tables"]["sketches"]["Insert"];
 type ReturnSketch = Database["public"]["Tables"]["sketches"]["Row"];
 
-export type { GetSketchJson, InsertSketch, ReturnSketch };
+export type { InsertSketch, ReturnSketch };
 export { envSchema };

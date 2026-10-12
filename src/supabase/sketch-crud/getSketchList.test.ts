@@ -1,4 +1,4 @@
-import { getSketchData } from "@/supabase/sketch-crud/getSketchData";
+import { getSketchList } from "@/supabase/sketch-crud/getSketchList";
 import { supabaseTestHelper } from "@/supabase/utils/supabaseTestUtility";
 import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import { version } from "fabric";
@@ -38,17 +38,17 @@ afterEach(async () => {
   await userTracker.deleteAll();
 });
 
-describe("getSketchData", () => {
+describe("getSketchList", () => {
   test("should return an error when a client fetches by ANON_KEY", async () => {
     await insertSketchOrThrow(firstUser, "sketch");
 
-    const getResult = await getSketchData(helper.createAnonClient());
+    const getResult = await getSketchList(helper.createAnonClient());
 
     expect(getResult.ok).toBe(false);
   });
 
   test("should return an empty array when the user has no sketches", async () => {
-    const getResult = await getSketchData(firstUser.client);
+    const getResult = await getSketchList(firstUser.client);
 
     expect(getResult).toEqual({ ok: true, value: [] });
   });
@@ -65,7 +65,7 @@ describe("getSketchData", () => {
       .eq("id", oldestId);
     if (error) throw error;
 
-    const getResult = await getSketchData(firstUser.client);
+    const getResult = await getSketchList(firstUser.client);
 
     if (!getResult.ok) throw getResult.error;
     expect(getResult.value.map((sketch) => sketch.id)).toEqual([
@@ -78,7 +78,7 @@ describe("getSketchData", () => {
   test("should return { id, title, description, created_at, updated_at } without canvas_json", async () => {
     await insertSketchOrThrow(firstUser, "sketch");
 
-    const getResult = await getSketchData(firstUser.client);
+    const getResult = await getSketchList(firstUser.client);
 
     if (!getResult.ok) throw getResult.error;
     expect(getResult.value).toHaveLength(1);
@@ -98,7 +98,7 @@ describe("getSketchData", () => {
       "second user's sketch",
     );
 
-    const getResult = await getSketchData(secondUser.client);
+    const getResult = await getSketchList(secondUser.client);
 
     if (!getResult.ok) throw getResult.error;
     expect(getResult.value.map((sketch) => sketch.id)).toEqual([secondId]);

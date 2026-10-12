@@ -16,7 +16,7 @@ fabric "object:modified"
 | -------------------------------------- | --------------------------------------------------------- |
 | `src/save-sketch/useSave.ts`           | Hook that saves on `object:modified` when auto-save is on |
 | `src/save-sketch/saveToDb.ts`          | Builds the row from the canvas and calls `upsertSketch`   |
-| `src/supabase/sketch-crud/handleDb.ts` | `getSketchJson`, `insertSketch`, `upsertSketch`           |
+| `src/supabase/sketch-crud/handleDb.ts` | `insertSketch`, `upsertSketch`                            |
 
 ## Details
 
@@ -26,10 +26,13 @@ fabric "object:modified"
   - The id returned by the first save is kept in `sketchIdRef`, and later saves upsert the same row.
   - If `sketchInfoRef` or `frameRef` is not set, it sets `err` instead of saving.
 - `saveToDb`
+  - Creates a browser Supabase client and passes it to `upsertSketch`.
   - Takes the canvas JSON (`canvas.toJSON()`) and the fabric version.
   - Combines them with the sketch info (`title`, `description`, `cell_size`) and the frame (`width`, `height`, `frame_id`).
 - `handleDb`
   - Every function returns `Result<T>` (`src/utils/utility.types.ts`).
   - These are the pure CRUD functions.
+  - `upsertSketch` takes a Supabase client as the first argument.
+    Saving passes the browser client, and creating a sketch (see [Routing](./routing.en.md)) passes the client for Server Actions.
   - `upsertSketch` is an error if the number of returned rows is not 1.
 - `width`, `height` and `updated_at` are finished by DB triggers. See [Database](./database.en.md).

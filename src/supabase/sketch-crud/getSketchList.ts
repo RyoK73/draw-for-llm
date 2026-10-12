@@ -1,12 +1,12 @@
 import "server-only";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { GetSketchData } from "@/supabase/sketch-crud/getSketchData.types";
+import { GetSketchList } from "@/supabase/sketch-crud/getSketchList.types";
 import { Result } from "@/utils/utility.types";
 
 // Get the sketch list in descending order of updated_at. It does not select canvas_json.
-const getSketchData = async (
+const getSketchList = async (
   supabaseClient: SupabaseClient,
-): Promise<Result<GetSketchData>> => {
+): Promise<Result<GetSketchList>> => {
   const { data, error } = await supabaseClient
     .from("sketches")
     .select("id,title,description,created_at,updated_at")
@@ -18,4 +18,4 @@ const getSketchData = async (
   return { ok: true, value: data };
 };
 
-export { getSketchData };
+export { getSketchList };

@@ -18,17 +18,20 @@ Exact versions are in `package.json`.
 The codebase is split by what it does (vertical).
 See [Directory structure](../rules/directory-structure.en.md) for the rule.
 
-| Directory          | Role                                                      |
-| ------------------ | --------------------------------------------------------- |
-| `src/app/`         | Routing only                                              |
-| `src/proxy.ts`     | Next.js proxy. Refreshes the auth session on each request |
-| `src/draw/`        | Canvas, shapes and undo/redo history built on fabric.js   |
-| `src/save-sketch/` | Saving a sketch to the DB                                 |
-| `src/sketch-list/` | Showing the sketch list (Server and Client Components)    |
-| `src/supabase/`    | Supabase clients, auth, CRUD and DB tests                 |
-| `src/utils/`       | Shared types                                              |
-| `src/dev-scripts/` | Scripts for development                                   |
-| `src/test/`        | Pure helpers for tests                                    |
+| Directory            | Role                                                            |
+| -------------------- | --------------------------------------------------------------- |
+| `src/app/`           | Routing only                                                    |
+| `src/proxy.ts`       | Next.js proxy. Refreshes the auth session on each request       |
+| `src/draw/`          | Canvas, shapes and undo/redo history built on fabric.js         |
+| `src/save-sketch/`   | Saving a sketch to the DB                                       |
+| `src/new-sketch/`    | Creating a sketch (button and Server Action)                    |
+| `src/sketch-detail/` | Showing the sketch page                                         |
+| `src/design-system/` | Generic UI parts (button and toast from shadcn/ui, `LocalTime`) |
+| `src/sketch-list/`   | Showing the sketch list (Server and Client Components)          |
+| `src/supabase/`      | Supabase clients, auth, CRUD and DB tests                       |
+| `src/utils/`         | Shared types                                                    |
+| `src/dev-scripts/`   | Scripts for development                                         |
+| `src/test/`          | Pure helpers for tests                                          |
 
 ## Drawing (`src/draw/`)
 
@@ -40,11 +43,15 @@ See [Directory structure](../rules/directory-structure.en.md) for the rule.
 
 ## Sketch list (`src/sketch-list/`)
 
-| File              | Role                                                                |
-| ----------------- | ------------------------------------------------------------------- |
-| `sketch-list.tsx` | Server Component. Renders the list from `getSketchData`             |
-| `local-time.tsx`  | Client Component. Shows `updated_at` in a `<time dateTime>` element |
-| `index.ts`        | Exports only `SketchList`                                           |
+| File              | Role                                                    |
+| ----------------- | ------------------------------------------------------- |
+| `sketch-list.tsx` | Server Component. Renders the list from `getSketchList` |
+| `index.ts`        | Exports `SketchList`                                    |
+
+## Date and time (`src/design-system/local-time.tsx`)
+
+`LocalTime` is a Client Component.
+It shows `updated_at` in a `<time dateTime>` element.
 
 `LocalTime` renders differently depending on where it runs.
 It uses `useSyncExternalStore` to avoid a hydration mismatch.
@@ -53,6 +60,21 @@ It uses `useSyncExternalStore` to avoid a hydration mismatch.
 | ---------------------------- | -------------- | ----------------- |
 | Server side and on hydration | `en-US`        | UTC               |
 | Client                       | Browser locale | Browser time zone |
+
+## Creating a sketch (`src/new-sketch/`)
+
+| File                    | Role                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------- |
+| `start-new-sketch.ts`   | Server Action. Signs in anonymously if needed, creates an empty sketch and goes to `/sketches/{id}` |
+| `new-sketch-button.tsx` | Client Component. Calls `startNewSketch` and shows a toast on failure                               |
+| `index.ts`              | Exports `NewSketchButton` and `startNewSketch`                                                      |
+
+## Sketch page (`src/sketch-detail/`)
+
+| File                | Role                                                    |
+| ------------------- | ------------------------------------------------------- |
+| `sketch-detail.tsx` | Server Component. Renders one sketch got by `getSketch` |
+| `index.ts`          | Exports only `SketchDetail`                             |
 
 ## Next
 

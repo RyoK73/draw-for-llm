@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
-import { getSketchData } from "@/supabase/sketch-crud/getSketchData";
-import { LocalTime } from "@/sketch-list/local-time";
+import { getSketchList } from "@/supabase/sketch-crud/getSketchList";
+import { LocalTime } from "@/design-system/local-time";
 
 const SketchList = async () => {
   const supabaseClient = await createSupabaseServerClient();
-  const result = await getSketchData(supabaseClient);
+  const result = await getSketchList(supabaseClient);
 
   if (!result.ok) {
     return <p role="alert">スケッチ一覧の取得に失敗しました。</p>;

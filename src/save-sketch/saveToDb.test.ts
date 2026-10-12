@@ -1,4 +1,5 @@
 import { upsertSketch } from "@/supabase/sketch-crud/handleDb";
+import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { saveToDb } from "@/save-sketch/saveToDb";
 import { Canvas, version } from "fabric";
 import { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
@@ -11,6 +12,12 @@ vi.mock(import("@/supabase/sketch-crud/handleDb"), async (importOriginal) => {
     upsertSketch: vi.fn(),
   };
 });
+
+const browserClientStub = {} as ReturnType<typeof createSupabaseBrowserClient>;
+
+vi.mock("@/supabase/utils/browserClient", () => ({
+  createSupabaseBrowserClient: vi.fn(() => browserClientStub),
+}));
 
 const canvas = new Canvas();
 
@@ -32,7 +39,7 @@ describe("saveToDb", () => {
       height: testFrame.height,
       frame_id: testFrame.frame_id,
     };
-    expect(upsertSketch).toHaveBeenCalledWith(validArgument);
+    expect(upsertSketch).toHaveBeenCalledWith(browserClientStub, validArgument);
   });
 
   it("should save a custom size when frame_id is null.", () => {
@@ -44,6 +51,7 @@ describe("saveToDb", () => {
     saveToDb(canvas, { title: testTitle }, customFrame);
 
     expect(upsertSketch).toHaveBeenCalledWith(
+      browserClientStub,
       expect.objectContaining({ width: 800, height: 600, frame_id: null }),
     );
   });
@@ -52,6 +60,7 @@ describe("saveToDb", () => {
     saveToDb(canvas, { title: testTitle }, { width: 800, height: 600 });
 
     expect(upsertSketch).toHaveBeenCalledWith(
+      browserClientStub,
       expect.objectContaining({ width: 800, height: 600 }),
     );
   });
@@ -60,6 +69,7 @@ describe("saveToDb", () => {
     saveToDb(canvas, { title: testTitle, cell_size: 32 }, testFrame);
 
     expect(upsertSketch).toHaveBeenCalledWith(
+      browserClientStub,
       expect.objectContaining({ cell_size: 32 }),
     );
   });
@@ -68,6 +78,7 @@ describe("saveToDb", () => {
     saveToDb(canvas, { title: testTitle }, testFrame);
 
     expect(upsertSketch).toHaveBeenCalledWith(
+      browserClientStub,
       expect.not.objectContaining({ cell_size: expect.anything() }),
     );
   });
@@ -76,6 +87,7 @@ describe("saveToDb", () => {
     saveToDb(canvas, { title: testTitle }, testFrame, "test-sketch-id");
 
     expect(upsertSketch).toHaveBeenCalledWith(
+      browserClientStub,
       expect.objectContaining({ id: "test-sketch-id" }),
     );
   });
