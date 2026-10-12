@@ -2,13 +2,13 @@
 
 ## Routes
 
-| Path             | Content                                               |
-| ---------------- | ----------------------------------------------------- |
-| `/`              | The initial page of create-next-app                   |
-| `/signin`        | Placeholder (only `<h1>sample</h1>`)                  |
-| `/signup`        | Placeholder (only `<h1>sample</h1>`)                  |
-| `/sketches`      | The sketch list. Has a `loading.tsx`                  |
-| `/sketches/[id]` | Placeholder. The link target of each item in the list |
+| Path             | Content                                                                          |
+| ---------------- | -------------------------------------------------------------------------------- |
+| `/`              | The initial page of create-next-app                                              |
+| `/signin`        | Placeholder (only `<h1>sample</h1>`)                                             |
+| `/signup`        | Placeholder (only `<h1>sample</h1>`)                                             |
+| `/sketches`      | The sketch list. Has a new-sketch button and a `loading.tsx`                     |
+| `/sketches/[id]` | The sketch page. The link target of each item in the list. Has a `not-found.tsx` |
 
 See [Authentication](./auth.en.md) for the redirects by path.
 
@@ -38,4 +38,39 @@ See [Overview](./overview.en.md) for the components.
 | No rows | "スケッチがまだありません。"                                                                    |
 | 1+ rows | Each item links to `/sketches/{id}`. Shows `title`, `description` (if any) and the updated time |
 
-- The updated time is shown by `LocalTime`. It is not shown when `updated_at` is `null`.
+- The updated time is shown by `LocalTime` (`src/design-system/local-time.tsx`). It is not shown when `updated_at` is `null`.
+
+### Creating a sketch
+
+`src/app/sketches/page.tsx` also renders `NewSketchButton` from `src/new-sketch/`.
+
+- `NewSketchButton` is a Client Component.
+  It calls the Server Action `startNewSketch` through `useActionState`.
+- `startNewSketch` works as follows.
+  1. It creates a client for Server Actions (`createSupabaseActionClient`).
+  2. Only when `getAuthState` returns `signedOut`, it signs in anonymously by `signInAnonymously`.
+  3. It creates an empty sketch by `upsertSketch` with only `fabric_version`.
+     It does not pass `id`.
+     `title`, `canvas_json`, `width`, `height` and so on are filled in by the DB defaults and the trigger.
+     See [Database](./database.en.md).
+  4. On success, it redirects to `/sketches/{id}`.
+- When the anonymous sign-in or the creation fails, it returns an error message.
+  `NewSketchButton` shows the message as a toast (`src/design-system/toast.tsx`).
+- `<Toaster>` is placed in `src/app/layout.tsx`.
+
+## Sketch page (`/sketches/[id]`)
+
+`src/app/sketches/[id]/page.tsx` renders `SketchDetail` from `src/sketch-detail/`.
+
+- `SketchDetail` calls `notFound()` when `id` is not a uuid.
+- It passes a client made by `createSupabaseServerClient` to `getSketch` (`src/supabase/sketch-crud/getSketch.ts`).
+- `getSketch` is server only (`server-only`).
+  It gets `id`, `title`, `description`, `width`, `height`, `created_at` and `updated_at`.
+  It does not get `canvas_json`.
+- By the RLS, both a nonexistent `id` and an `id` of another user give `null`.
+
+| State                         | Display                                                                                 |
+| ----------------------------- | --------------------------------------------------------------------------------------- |
+| `id` is not a uuid, or `null` | `notFound()`. `not-found.tsx` shows "スケッチが見つかりません。" and a link to the list |
+| Error                         | "スケッチの取得に失敗しました。" with `role="alert"`                                    |
+| Success                       | Shows `title`, `description` (if any), `width × height` and the updated time            |

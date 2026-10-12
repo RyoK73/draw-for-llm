@@ -39,8 +39,10 @@
 
 ## サインイン関数
 
-`src/supabase/auth/`に定義され、ブラウザクライアントを使用します。
+`src/supabase/auth/`に定義されています。
 いずれも`Result<void>`を返します。
+`signInAnonymously`は、引数でSupabaseクライアントを受け取ります。
+それ以外は、ブラウザクライアントを使用します。
 
 | 関数                                  | 内容                                                         |
 | ------------------------------------- | ------------------------------------------------------------ |
@@ -49,6 +51,17 @@
 | `signInAnonymously`                   | 匿名ユーザーとしてサインインします。                         |
 | `convertAnonymousUserToPermanentUser` | 匿名ユーザーにメールアドレスを追加し、永続ユーザーにします。 |
 | `signOut`                             | サインアウトします。                                         |
+
+## Server Actionでの匿名サインイン
+
+新規作成の`startNewSketch`は、`signedOut`の場合に、Server Actionの中で匿名サインインします。
+詳細は[ルーティング](./routing.ja.md)を参照してください。
+
+- 新しいセッションのCookieをレスポンスに載せるため、`createSupabaseActionClient`(`src/supabase/utils/actionClient.ts`)を使います。
+  このクライアントは、Cookieを読み書きできます。
+- `createSupabaseServerClient`(`src/supabase/utils/serverClient.ts`)は、Cookieの読み取り専用です。
+  Server Componentで使用します。
+  トークンの更新は`proxy.ts`が担当します。
 
 ## テストの設定
 

@@ -1,7 +1,9 @@
 ## Naming Conventions
 
-- Variables: `lowerCamelCase`
-- Class names: `UpperCamelCase`
+- Variable: `lowerCamelCase`
+- Class Name: `UpperCamelCase`
 - Functions: `lowerCamelCase`
-- Types (type/interface): `UpperCamelCase`
-- Constants: `UPPER_SNAKE_CASE`
+- Type (type/interface): `UpperCamelCase`
+- Constant: `UPPER_SNAKE_CASE`
+- TypeScript File Nmae: `lowerCamelCase`
+- TypeScript Component File Nmae: `kebab-case`
