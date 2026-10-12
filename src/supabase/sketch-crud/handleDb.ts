@@ -1,25 +1,9 @@
 import {
-  GetSketchJson,
   InsertSketch,
   ReturnSketch,
 } from "@/supabase/sketch-crud/handleDb.types";
 import { Result } from "@/utils/utility.types";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
-
-// Get the json data from the sketch table.
-const getSketchJson = async (id: string): Promise<Result<GetSketchJson>> => {
-  const supabaseClient = createSupabaseBrowserClient();
-  const { data, error } = await supabaseClient
-    .from("sketches")
-    .select("canvas_json")
-    .eq("id", id)
-    .single();
-
-  if (error) {
-    return { ok: false, error: error };
-  }
-  return { ok: true, value: data.canvas_json };
-};
 
 // Insert the json data to the sketch table.
 const insertSketch = async (
@@ -68,4 +52,4 @@ const upsertSketch = async (
   return { ok: true, value: data[0] };
 };
 
-export { getSketchJson, insertSketch, upsertSketch };
+export { insertSketch, upsertSketch };
