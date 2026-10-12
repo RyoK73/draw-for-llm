@@ -1,9 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
 import { getSketch } from "@/supabase/sketch-crud/getSketch";
 import { LocalTime } from "@/design-system/local-time";
-import Link from "next/link";
 
 const SketchDetail = async ({ id }: { id: string }) => {
   if (!z.uuid().safeParse(id).success) notFound();
