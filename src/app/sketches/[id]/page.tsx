@@ -1,9 +1,8 @@
-const page = () => {
-  return (
-    <div>
-      <h1>sample</h1>
-    </div>
-  );
+import { SketchDetail } from "@/sketch-detail";
+
+const page = async ({ params }: PageProps<"/sketches/[id]">) => {
+  const { id } = await params;
+  return <SketchDetail id={id} />;
 };
 
 export default page;
