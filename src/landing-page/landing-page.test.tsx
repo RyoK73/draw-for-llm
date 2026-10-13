@@ -30,7 +30,10 @@ describe("LandingPage", () => {
       await renderLandingPage(authState);
 
       expect(
-        screen.getByRole("heading", { level: 1, name: "draw-for-llm" }),
+        screen.getByRole("heading", {
+          level: 1,
+          name: "ひらめきを、描いて、渡す",
+        }),
       ).toBeInTheDocument();
     },
   );
