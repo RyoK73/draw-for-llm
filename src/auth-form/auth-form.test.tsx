@@ -31,7 +31,7 @@ vi.mock("@/design-system/toast", () => ({ toast: { add: vi.fn() } }));
 const ok = { ok: true, value: undefined } as const;
 
 const fail = (code: string) =>
-  ({ ok: false, error: Object.assign(new Error("e"), { code }) }) as const; // `Obejct.assign` acts AuthError type.
+  ({ ok: false, error: Object.assign(new Error("e"), { code }) }) as const; // `Object.assign` acts AuthError type.
 
 // jsdom ignores `formnovalidate` of a submit button, unlike browsers.
 // So fill the required code field before resending or changing the email.
@@ -168,25 +168,7 @@ describe("AuthForm", () => {
     );
   });
 
-  test("should keep the email and clear the code when the code is wrong", async () => {
-    vi.mocked(verifyOTP).mockResolvedValue(fail("otp_expired"));
-    render(<AuthForm mode="signin" isGuest={false} />);
-    await sendCode();
-
-    await userEvent.type(
-      await screen.findByLabelText("確認コード(6桁)"),
-      "000000",
-    );
-    await userEvent.click(screen.getByRole("button", { name: "認証する" }));
-
-    expect(await screen.findByRole("alert")).toBeInTheDocument();
-    expect(screen.getByLabelText("メールアドレス")).toHaveValue(
-      "a@example.com",
-    );
-    expect(screen.getByLabelText("確認コード(6桁)")).toHaveValue("");
-  });
-
-  test("should show an inline error and not navigate when the code is wrong", async () => {
+  test("should keep the email, clear the code, not navigate when the code is wrong", async () => {
     vi.mocked(verifyOTP).mockResolvedValue(fail("otp_expired"));
     render(<AuthForm mode="signin" isGuest={false} />);
     await sendCode();
@@ -200,6 +182,10 @@ describe("AuthForm", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "コードが正しくない",
     );
+    expect(screen.getByLabelText("メールアドレス")).toHaveValue(
+      "a@example.com",
+    );
+    expect(screen.getByLabelText("確認コード(6桁)")).toHaveValue("");
     expect(push).not.toHaveBeenCalled();
   });
 
