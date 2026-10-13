@@ -18,20 +18,21 @@ Exact versions are in `package.json`.
 The codebase is split by what it does (vertical).
 See [Directory structure](../rules/directory-structure.en.md) for the rule.
 
-| Directory            | Role                                                            |
-| -------------------- | --------------------------------------------------------------- |
-| `src/app/`           | Routing only                                                    |
-| `src/proxy.ts`       | Next.js proxy. Refreshes the auth session on each request       |
-| `src/draw/`          | Canvas, shapes and undo/redo history built on fabric.js         |
-| `src/save-sketch/`   | Saving a sketch to the DB                                       |
-| `src/new-sketch/`    | Creating a sketch (button and Server Action)                    |
-| `src/sketch-detail/` | Showing the sketch page                                         |
-| `src/design-system/` | Generic UI parts (button and toast from shadcn/ui, `LocalTime`) |
-| `src/sketch-list/`   | Showing the sketch list (Server and Client Components)          |
-| `src/supabase/`      | Supabase clients, auth, CRUD and DB tests                       |
-| `src/utils/`         | Shared types                                                    |
-| `src/dev-scripts/`   | Scripts for development                                         |
-| `src/test/`          | Pure helpers for tests                                          |
+| Directory            | Role                                                                          |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `src/app/`           | Routing only                                                                  |
+| `src/proxy.ts`       | Next.js proxy. Refreshes the auth session on each request                     |
+| `src/draw/`          | Canvas, shapes and undo/redo history built on fabric.js                       |
+| `src/save-sketch/`   | Saving a sketch to the DB                                                     |
+| `src/auth-form/`     | The form for sign-in and guest registration                                   |
+| `src/new-sketch/`    | Creating a sketch (button and Server Action)                                  |
+| `src/sketch-detail/` | Showing the sketch page                                                       |
+| `src/design-system/` | Generic UI parts (button, input, label and toast from shadcn/ui, `LocalTime`) |
+| `src/sketch-list/`   | Showing the sketch list (Server and Client Components)                        |
+| `src/supabase/`      | Supabase clients, auth, CRUD and DB tests                                     |
+| `src/utils/`         | Shared types                                                                  |
+| `src/dev-scripts/`   | Scripts for development                                                       |
+| `src/test/`          | Pure helpers for tests                                                        |
 
 ## Drawing (`src/draw/`)
 
@@ -68,6 +69,17 @@ It uses `useSyncExternalStore` to avoid a hydration mismatch.
 | `start-new-sketch.ts`   | Server Action. Signs in anonymously if needed, creates an empty sketch and goes to `/sketches/{id}` |
 | `new-sketch-button.tsx` | Client Component. Calls `startNewSketch` and shows a toast on failure                               |
 | `index.ts`              | Exports `NewSketchButton` and `startNewSketch`                                                      |
+
+## Sign-in and guest registration (`src/auth-form/`)
+
+| File            | Role                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------ |
+| `auth-page.tsx` | Server Component. Gets the auth state and passes whether it is a guest to `AuthForm` |
+| `auth-form.tsx` | Client Component. Handles entering the email and the code, resending and navigation  |
+| `auth-error.ts` | Converts Supabase error codes into messages to show                                  |
+| `index.ts`      | Exports `AuthPage`                                                                   |
+
+See [Authentication](./auth.en.md) for details.
 
 ## Sketch page (`src/sketch-detail/`)
 

@@ -5,12 +5,13 @@
 | Path             | Content                                                                          |
 | ---------------- | -------------------------------------------------------------------------------- |
 | `/`              | The initial page of create-next-app                                              |
-| `/signin`        | Placeholder (only `<h1>sample</h1>`)                                             |
-| `/signup`        | Placeholder (only `<h1>sample</h1>`)                                             |
+| `/signin`        | Sign-in. Renders `AuthPage` from `src/auth-form/`                                |
+| `/signup`        | Registration. For a guest, it registers the email address                        |
 | `/sketches`      | The sketch list. Has a new-sketch button and a `loading.tsx`                     |
 | `/sketches/[id]` | The sketch page. The link target of each item in the list. Has a `not-found.tsx` |
 
 See [Authentication](./auth.en.md) for the redirects by path.
+See [Authentication](./auth.en.md) also for the behavior of `/signin` and `/signup`.
 
 ## Sketch list (`/sketches`)
 
