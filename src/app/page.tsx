@@ -1,7 +1,7 @@
 import { LandingPage } from "@/landing-page";
 
-const page = () => {
+const Top = () => {
   return <LandingPage />;
 };
 
-export default page;
+export default Top;
