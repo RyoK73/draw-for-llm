@@ -242,6 +242,15 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# The templates show the OTP code (`{{ .Token }}`) because the app signs in by entering the code.
+[auth.email.template.magic_link]
+subject = "ログイン用コード"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = "メールアドレス確認用コード"
+content_path = "./supabase/templates/email_change.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

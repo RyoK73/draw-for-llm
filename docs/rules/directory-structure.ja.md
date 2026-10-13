@@ -37,10 +37,9 @@ src/
 │   ├── login-schema.ts
 │   └── index.ts            # 外部公開インターフェース
 ├── design-system/          # ドメインに属さない汎用UI部品
-│   ├── ui/                 # shadcn/uiが生成した"素"のプリミティブ
-│   │   ├── button.tsx
-│   │   └── dialog.tsx
-│   └── primary-button.tsx  # ui/ をラップした自社独自コンポーネント
+│   ├── button.tsx          # shadcn/uiが生成した"素"のプリミティブ
+│   ├── dialog.tsx
+│   └── primary-button.tsx  # button.tsx をラップした自社独自コンポーネント
 ├── utils/                    # ドメインに属さない汎用関数
 └── widgets/                # 複数ページ・機能から使われる独立verticalの例
 ```
@@ -72,22 +71,22 @@ src/
 - 素のshadcn部品をラップして独自スタイルを当てる場合は `design-system/` 直下に分けて置く
 
 > Ex
-> `design-system/ui/button.tsx` ← 素の部品
+> `design-system/button.tsx` ← 素の部品
 > `design-system/primary-button.tsx` ← ラップ後
 
 ### shadcn/uiへの対応
 
-- shadcn/uiで生成したコンポーネントは `src/design-system/ui/` にそのまま配置する
+- shadcn/uiで生成したコンポーネントは `src/design-system/` 直下にそのまま配置する
 - `components.json` の `aliases` を変更し、以降の `npx shadcn add` でも自動的に正しい場所に生成されるようにする
 
 ```json
 // components.json
 "aliases": {
-  "components": "@/src/design-system",
-  "ui": "@/src/design-system",
-  "lib": "@/src/design-system/lib",
-  "utils": "@/src/design-system/lib/utils",
-  "hooks": "@/src/design-system/hooks"
+  "components": "@/components",
+  "utils": "@/design-system/utils",
+  "ui": "@/design-system/",
+  "lib": "@/design-system/utils",
+  "hooks": "@/design-system/hooks"
 }
 ```
 

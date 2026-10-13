@@ -24,6 +24,11 @@ Defined in `supabase/config.toml`.
 | Studio                  | 54323 |
 | local_smtp (local mail) | 54324 |
 
+### Emails in local
+
+The emails that the local Supabase sends can be read at `http://127.0.0.1:54324` (Mailpit).
+Check the codes of sign-in and guest registration there.
+
 ## Migrations
 
 | Command              | What it does                                                                |

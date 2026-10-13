@@ -1,9 +1,7 @@
+import { AuthPage } from "@/auth-form";
+
 const page = () => {
-  return (
-    <div>
-      <h1>sample</h1>
-    </div>
-  );
+  return <AuthPage mode="signin" />;
 };
 
 export default page;

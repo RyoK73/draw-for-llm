@@ -18,20 +18,21 @@
 コードは「何をするか」で縦に分割しています(vertical)。
 ルールは[ディレクトリ構成](../rules/directory-structure.ja.md)を参照してください。
 
-| ディレクトリ         | 役割                                                         |
-| -------------------- | ------------------------------------------------------------ |
-| `src/app/`           | ルーティング専用                                             |
-| `src/proxy.ts`       | Next.jsのproxy。リクエストごとに認証セッションを更新します。 |
-| `src/draw/`          | fabric.jsによるキャンバス、図形、undo/redo履歴               |
-| `src/save-sketch/`   | スケッチのDBへの保存                                         |
-| `src/new-sketch/`    | スケッチの新規作成(ボタンとServer Action)                    |
-| `src/sketch-detail/` | スケッチの個別ページの表示                                   |
-| `src/sketch-list/`   | スケッチ一覧の表示(Server ComponentとClient Component)       |
-| `src/design-system/` | 汎用UI部品(shadcn/ui由来のボタンとtoast、`LocalTime`)        |
-| `src/supabase/`      | Supabaseのクライアント、認証、CRUD、DBテスト                 |
-| `src/utils/`         | 共通の型                                                     |
-| `src/dev-scripts/`   | 開発用スクリプト                                             |
-| `src/test/`          | テスト用のヘルパー                                           |
+| ディレクトリ         | 役割                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| `src/app/`           | ルーティング専用                                                      |
+| `src/proxy.ts`       | Next.jsのproxy。リクエストごとに認証セッションを更新します。          |
+| `src/draw/`          | fabric.jsによるキャンバス、図形、undo/redo履歴                        |
+| `src/save-sketch/`   | スケッチのDBへの保存                                                  |
+| `src/auth-form/`     | サインインとゲスト登録のフォーム                                      |
+| `src/new-sketch/`    | スケッチの新規作成(ボタンとServer Action)                             |
+| `src/sketch-detail/` | スケッチの個別ページの表示                                            |
+| `src/sketch-list/`   | スケッチ一覧の表示(Server ComponentとClient Component)                |
+| `src/design-system/` | 汎用UI部品(shadcn/ui由来のボタン、入力欄、ラベル、toast、`LocalTime`) |
+| `src/supabase/`      | Supabaseのクライアント、認証、CRUD、DBテスト                          |
+| `src/utils/`         | 共通の型                                                              |
+| `src/dev-scripts/`   | 開発用スクリプト                                                      |
+| `src/test/`          | テスト用のヘルパー                                                    |
 
 ## 描画(`src/draw/`)
 
@@ -67,6 +68,17 @@
 | `start-new-sketch.ts`   | Server Action。必要なら匿名サインインし、空のスケッチを作成して`/sketches/{id}`へ遷移します。 |
 | `new-sketch-button.tsx` | Client Component。`startNewSketch`を呼び、失敗したらtoastを表示します。                       |
 | `index.ts`              | `NewSketchButton`と`startNewSketch`を公開します。                                             |
+
+## サインインとゲスト登録(`src/auth-form/`)
+
+| ファイル        | 役割                                                                       |
+| --------------- | -------------------------------------------------------------------------- |
+| `auth-page.tsx` | Server Component。認証状態を取得し、ゲストかどうかを`AuthForm`に渡します。 |
+| `auth-form.tsx` | Client Component。メールアドレスとコードの入力、再送、遷移を担当します。   |
+| `auth-error.ts` | Supabaseのエラーコードを、表示用の文言に変換します。                       |
+| `index.ts`      | 公開するのは`AuthPage`です。                                               |
+
+詳細は[認証](./auth.ja.md)を参照してください。
 
 ## スケッチの個別ページ(`src/sketch-detail/`)
 
