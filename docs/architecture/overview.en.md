@@ -25,6 +25,7 @@ See [Directory structure](../rules/directory-structure.en.md) for the rule.
 | `src/draw/`          | Canvas, shapes and undo/redo history built on fabric.js                       |
 | `src/save-sketch/`   | Saving a sketch to the DB                                                     |
 | `src/auth-form/`     | The form for sign-in and guest registration                                   |
+| `src/landing-page/`  | Showing the landing page (buttons by auth state)                              |
 | `src/new-sketch/`    | Creating a sketch (button and Server Action)                                  |
 | `src/sketch-detail/` | Showing the sketch page                                                       |
 | `src/design-system/` | Generic UI parts (button, input, label and toast from shadcn/ui, `LocalTime`) |
@@ -69,6 +70,14 @@ It uses `useSyncExternalStore` to avoid a hydration mismatch.
 | `start-new-sketch.ts`   | Server Action. Signs in anonymously if needed, creates an empty sketch and goes to `/sketches/{id}` |
 | `new-sketch-button.tsx` | Client Component. Calls `startNewSketch` and shows a toast on failure                               |
 | `index.ts`              | Exports `NewSketchButton` and `startNewSketch`                                                      |
+
+## Landing page (`src/landing-page/`)
+
+| File               | Role                                                                  |
+| ------------------ | --------------------------------------------------------------------- |
+| `landing-page.tsx` | Server Component. Gets the auth state and renders the buttons for it  |
+| `introduction.tsx` | Server Component. Renders the application's static introductory text. |
+| `index.ts`         | Exports `LandingPage`                                                 |
 
 ## Sign-in and guest registration (`src/auth-form/`)
 

@@ -25,6 +25,7 @@
 | `src/draw/`          | fabric.jsによるキャンバス、図形、undo/redo履歴                        |
 | `src/save-sketch/`   | スケッチのDBへの保存                                                  |
 | `src/auth-form/`     | サインインとゲスト登録のフォーム                                      |
+| `src/landing-page/`  | ランディングページの表示(認証状態ごとのボタン)                        |
 | `src/new-sketch/`    | スケッチの新規作成(ボタンとServer Action)                             |
 | `src/sketch-detail/` | スケッチの個別ページの表示                                            |
 | `src/sketch-list/`   | スケッチ一覧の表示(Server ComponentとClient Component)                |
@@ -68,6 +69,14 @@
 | `start-new-sketch.ts`   | Server Action。必要なら匿名サインインし、空のスケッチを作成して`/sketches/{id}`へ遷移します。 |
 | `new-sketch-button.tsx` | Client Component。`startNewSketch`を呼び、失敗したらtoastを表示します。                       |
 | `index.ts`              | `NewSketchButton`と`startNewSketch`を公開します。                                             |
+
+## ランディングページ(`src/landing-page/`)
+
+| ファイル           | 役割                                                               |
+| ------------------ | ------------------------------------------------------------------ |
+| `landing-page.tsx` | Server Component。認証状態を取得し、状態ごとのボタンを描画します。 |
+| `introduction.tsx` | Server Component。アプリケーションの静的な紹介文を描画します。     |
+| `index.ts`         | 公開するのは`LandingPage`です。                                    |
 
 ## サインインとゲスト登録(`src/auth-form/`)
 
