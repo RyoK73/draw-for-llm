@@ -2,16 +2,17 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { Result } from "@/utils/utility.types";
 import { updateUser } from "@/supabase/auth/utility";
 
+// `email_change` is for the code sent by `convertAnonymousUserToPermanentUser`.
+type VerifyOTPType = "email" | "email_change";
+
 const signInWithOTP = async (
   supabaseClient: SupabaseClient,
   email: string,
-  emailRedirectTo: string,
 ): Promise<Result<void>> => {
   const { error: signInError } = await supabaseClient.auth.signInWithOtp({
     email: email,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: emailRedirectTo,
     },
   });
 
@@ -23,11 +24,12 @@ const verifyOTP = async (
   supabaseClient: SupabaseClient,
   email: string,
   token: string,
+  type: VerifyOTPType = "email",
 ): Promise<Result<void>> => {
   const { error: verifyOTPError } = await supabaseClient.auth.verifyOtp({
     email: email,
     token: token,
-    type: "email",
+    type: type,
   });
 
   if (verifyOTPError) return { ok: false, error: verifyOTPError };
@@ -58,3 +60,4 @@ export {
   signInAnonymously,
   convertAnonymousUserToPermanentUser,
 };
+export type { VerifyOTPType };

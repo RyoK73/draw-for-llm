@@ -3,6 +3,7 @@ import { Result } from "@/utils/utility.types";
 
 const updateUser = async (
   supabaseClient: SupabaseClient,
+  email: string,
 ): Promise<Result<void>> => {
   const { error: updateEmailError } = await supabaseClient.auth.updateUser({
     email: email,
