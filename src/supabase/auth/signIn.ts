@@ -1,13 +1,12 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Result } from "@/utils/utility.types";
-import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
 import { updateUser } from "@/supabase/auth/utility";
 
 const signInWithOTP = async (
+  supabaseClient: SupabaseClient,
   email: string,
   emailRedirectTo: string,
 ): Promise<Result<void>> => {
-  const supabaseClient = createSupabaseBrowserClient();
   const { error: signInError } = await supabaseClient.auth.signInWithOtp({
     email: email,
     options: {
@@ -21,10 +20,10 @@ const signInWithOTP = async (
 };
 
 const verifyOTP = async (
+  supabaseClient: SupabaseClient,
   email: string,
   token: string,
 ): Promise<Result<void>> => {
-  const supabaseClient = createSupabaseBrowserClient();
   const { error: verifyOTPError } = await supabaseClient.auth.verifyOtp({
     email: email,
     token: token,
@@ -47,9 +46,10 @@ const signInAnonymously = async (
 };
 
 const convertAnonymousUserToPermanentUser = async (
+  supabaseClient: SupabaseClient,
   email: string,
 ): Promise<Result<void>> => {
-  return await updateUser(email);
+  return await updateUser(supabaseClient, email);
 };
 
 export {
