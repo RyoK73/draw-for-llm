@@ -2,7 +2,6 @@ const Introduction = () => {
   return (
     <>
       <section className="mx-auto flex max-w-2xl flex-col gap-16 px-6 py-24">
-        {/* ヒーロー */}
         <div className="flex flex-col gap-4">
           <h1 className="text-4xl font-bold tracking-tight">
             ひらめきを、描いて、渡す
@@ -12,7 +11,6 @@ const Introduction = () => {
           </p>
         </div>
 
-        {/* 価値 1 */}
         <div className="flex flex-col gap-4">
           <h2 className="text-2xl font-semibold tracking-tight">
             言葉のほかに、もうひとつの伝え方を
@@ -32,7 +30,6 @@ const Introduction = () => {
           </p>
         </div>
 
-        {/* 価値 2 */}
         <div className="flex flex-col gap-4">
           <h2 className="text-2xl font-semibold tracking-tight">
             シンプルで、速い。
@@ -44,7 +41,6 @@ const Introduction = () => {
           </p>
         </div>
 
-        {/* ユースケース */}
         <div className="flex flex-col gap-6">
           <h2 className="text-2xl font-semibold tracking-tight">
             こんな場面で使えます
