@@ -4,7 +4,7 @@
 
 | Path             | Content                                                                          |
 | ---------------- | -------------------------------------------------------------------------------- |
-| `/`              | The initial page of create-next-app                                              |
+| `/`              | The landing page. The buttons change with the auth state                         |
 | `/signin`        | Sign-in. Renders `AuthPage` from `src/auth-form/`                                |
 | `/signup`        | Registration. For a guest, it registers the email address                        |
 | `/sketches`      | The sketch list. Has a new-sketch button and a `loading.tsx`                     |
@@ -12,6 +12,21 @@
 
 See [Authentication](./auth.en.md) for the redirects by path.
 See [Authentication](./auth.en.md) also for the behavior of `/signin` and `/signup`.
+
+## Landing page (`/`)
+
+`src/app/page.tsx` renders `LandingPage` from `src/landing-page/`.
+It is always shown, whether the user is signed out or signed in.
+
+- `LandingPage` passes a client made by `createSupabaseServerClient` to `getAuthState`, and shows different buttons by the auth state.
+- "ゲストとして続ける" (Continue as a guest) is `NewSketchButton`.
+  The flow is the same as "Creating a sketch" in [Sketch list](#sketch-list-sketches).
+
+| Auth state   | Buttons                                                                                      |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| `signedOut`  | "ゲストとして続ける", "サインアップ" (`/signup`), "サインイン" (`/signin`)                   |
+| `guest`      | "スケッチ一覧へ" (`/sketches`), "アカウント登録（他の端末でも使えるようにする）" (`/signup`) |
+| `registered` | "スケッチ一覧へ" (`/sketches`)                                                               |
 
 ## Sketch list (`/sketches`)
 
