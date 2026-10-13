@@ -73,10 +73,11 @@ It uses `useSyncExternalStore` to avoid a hydration mismatch.
 
 ## Landing page (`src/landing-page/`)
 
-| File               | Role                                                                 |
-| ------------------ | -------------------------------------------------------------------- |
-| `landing-page.tsx` | Server Component. Gets the auth state and renders the buttons for it |
-| `index.ts`         | Exports `LandingPage`                                                |
+| File               | Role                                                                  |
+| ------------------ | --------------------------------------------------------------------- |
+| `landing-page.tsx` | Server Component. Gets the auth state and renders the buttons for it  |
+| `introduction.tsx` | Server Component. Renders the application's static introductory text. |
+| `index.ts`         | Exports `LandingPage`                                                 |
 
 ## Sign-in and guest registration (`src/auth-form/`)
 
