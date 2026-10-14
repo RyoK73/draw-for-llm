@@ -38,7 +38,7 @@ const shapes: Record<ShapeType, Builder> = {
     new Triangle({ ...commonParameters, ...optionalParam }),
 };
 
-const useShapes = (fabricCanvasRef: RefObject<Canvas>) => {
+const useShapes = (fabricCanvasRef: RefObject<Canvas | null>) => {
   const createShape = (
     type: ShapeType,
     fillColor: string = "transparent",
@@ -60,3 +60,4 @@ const useShapes = (fabricCanvasRef: RefObject<Canvas>) => {
 };
 
 export { useShapes };
+export type { ShapeType };
