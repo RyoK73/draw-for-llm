@@ -1,9 +1,9 @@
 import { upsertSketch } from "@/supabase/sketch-crud/handleDb";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
-import { saveToDb } from "@/save-sketch/saveToDb";
+import { saveToDb } from "@/sketch-detail/save/saveToDb";
 import { Canvas, version } from "fabric";
 import { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
-import { CanvasFrame } from "@/save-sketch/saveToDb.types";
+import { CanvasFrame } from "@/sketch-detail/save/saveToDb.types";
 
 vi.mock(import("@/supabase/sketch-crud/handleDb"), async (importOriginal) => {
   const actual = await importOriginal();

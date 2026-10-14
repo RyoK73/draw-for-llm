@@ -1,7 +1,7 @@
 import * as fabric from "fabric";
 import { useRef, useState, useEffect, RefObject } from "react";
-import { saveToDb } from "@/save-sketch/saveToDb";
-import { SketchInfo, CanvasFrame } from "@/save-sketch/saveToDb.types";
+import { saveToDb } from "@/sketch-detail/save/saveToDb";
+import { SketchInfo, CanvasFrame } from "@/sketch-detail/save/saveToDb.types";
 import pDebounce from "p-debounce";
 
 const SAVE_DELAY: number = 250;

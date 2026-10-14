@@ -1,10 +1,10 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { useSave } from "@/save-sketch/useSave";
+import { useSave } from "@/sketch-detail/save/useSave";
 import { Canvas } from "fabric";
-import { saveToDb } from "@/save-sketch/saveToDb";
-import { CanvasFrame } from "@/save-sketch/saveToDb.types";
+import { saveToDb } from "@/sketch-detail/save/saveToDb";
+import { CanvasFrame } from "@/sketch-detail/save/saveToDb.types";
 
-vi.mock("@/save-sketch/saveToDb", () => ({
+vi.mock("@/sketch-detail/save/saveToDb", () => ({
   saveToDb: vi.fn(),
 }));
 

@@ -2,7 +2,7 @@ import { Canvas, version } from "fabric";
 import { InsertSketch } from "@/supabase/sketch-crud/handleDb.types";
 import { upsertSketch } from "@/supabase/sketch-crud/handleDb";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
-import { SketchInfo, CanvasFrame } from "@/save-sketch/saveToDb.types";
+import { SketchInfo, CanvasFrame } from "@/sketch-detail/save/saveToDb.types";
 
 const saveToDb = async (
   canvasEl: Canvas,
