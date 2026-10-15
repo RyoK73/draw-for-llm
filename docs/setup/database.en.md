@@ -41,6 +41,8 @@ Check the codes of sign-in and guest registration there.
 
 The types are written to `src/supabase/utils/database.types.ts`.
 Regenerate them whenever the schema changes.
+This file is overwritten on every regeneration, so do not edit it directly.
+The app refers to `DatabaseModified` in `src/supabase/utils/modifiedDatabase.types.ts`.
 
 | Command               | Source                                                 |
 | --------------------- | ------------------------------------------------------ |
