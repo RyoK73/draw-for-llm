@@ -5,6 +5,7 @@ import {
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Result } from "@/utils/utility.types";
 import { createSupabaseBrowserClient } from "@/supabase/utils/browserClient";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 // Insert the json data to the sketch table.
 const insertSketch = async (
@@ -31,7 +32,7 @@ const insertSketch = async (
 };
 
 const upsertSketch = async (
-  supabaseClient: SupabaseClient,
+  supabaseClient: SupabaseClient<DatabaseModified>,
   sketch: InsertSketch,
 ): Promise<Result<ReturnSketch>> => {
   const { data, error } = await supabaseClient

@@ -1,12 +1,13 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Result } from "@/utils/utility.types";
 import { updateUser } from "@/supabase/auth/utility";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 // `email_change` is for the code sent by `convertAnonymousUserToPermanentUser`.
 type VerifyOTPType = "email" | "email_change";
 
 const signInWithOTP = async (
-  supabaseClient: SupabaseClient,
+  supabaseClient: SupabaseClient<DatabaseModified>,
   email: string,
 ): Promise<Result<void>> => {
   const { error: signInError } = await supabaseClient.auth.signInWithOtp({
@@ -21,7 +22,7 @@ const signInWithOTP = async (
 };
 
 const verifyOTP = async (
-  supabaseClient: SupabaseClient,
+  supabaseClient: SupabaseClient<DatabaseModified>,
   email: string,
   token: string,
   type: VerifyOTPType = "email",
@@ -37,7 +38,7 @@ const verifyOTP = async (
 };
 
 const signInAnonymously = async (
-  supabaseClient: SupabaseClient,
+  supabaseClient: SupabaseClient<DatabaseModified>,
 ): Promise<Result<void>> => {
   const { error: anonymouslySignInError } =
     await supabaseClient.auth.signInAnonymously();
@@ -48,7 +49,7 @@ const signInAnonymously = async (
 };
 
 const convertAnonymousUserToPermanentUser = async (
-  supabaseClient: SupabaseClient,
+  supabaseClient: SupabaseClient<DatabaseModified>,
   email: string,
 ): Promise<Result<void>> => {
   return await updateUser(supabaseClient, email);

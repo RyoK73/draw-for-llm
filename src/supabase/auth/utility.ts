@@ -1,8 +1,9 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Result } from "@/utils/utility.types";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 const updateUser = async (
-  supabaseClient: SupabaseClient,
+  supabaseClient: SupabaseClient<DatabaseModified>,
   email: string,
 ): Promise<Result<void>> => {
   const { error: updateEmailError } = await supabaseClient.auth.updateUser({

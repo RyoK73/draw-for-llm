@@ -2,11 +2,12 @@ import "server-only";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { GetSketch } from "@/supabase/sketch-crud/getSketch.types";
 import { Result } from "@/utils/utility.types";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 // Get a sketch by id. It does not select canvas_json.
 // It returns null when no row is visible (the id does not exist or belongs to another user).
 const getSketch = async (
-  supabaseClient: SupabaseClient,
+  supabaseClient: SupabaseClient<DatabaseModified>,
   id: string,
 ): Promise<Result<GetSketch | null>> => {
   const { data, error } = await supabaseClient

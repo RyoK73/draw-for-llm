@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getAuthState } from "@/supabase/auth/getAuthState";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 const updateSession = async (request: NextRequest) => {
   let supabaseResponse = NextResponse.next({
@@ -21,7 +22,7 @@ const updateSession = async (request: NextRequest) => {
 
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
-  const supabaseClient = createServerClient(
+  const supabaseClient = createServerClient<DatabaseModified>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
