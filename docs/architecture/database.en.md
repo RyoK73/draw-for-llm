@@ -3,6 +3,9 @@
 Postgres on Supabase.
 The schema is defined by `supabase/migrations/`.
 The generated types are in `src/supabase/utils/database.types.ts`.
+The app refers to `DatabaseModified` in `src/supabase/utils/modifiedDatabase.types.ts`.
+`DatabaseModified` is the generated `Database` with `sketches.canvas_json` replaced by `FabricJSON` (`string | Record<string, unknown>`).
+`FabricJSON` is based on the first argument of `loadFromJSON` of fabric.
 
 ## Tables
 

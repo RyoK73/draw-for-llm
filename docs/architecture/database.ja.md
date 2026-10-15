@@ -3,6 +3,9 @@
 Supabase上のPostgresです。
 スキーマは`supabase/migrations/`で定義されています。
 生成された型は`src/supabase/utils/database.types.ts`にあります。
+アプリが参照する型は`src/supabase/utils/modifiedDatabase.types.ts`の`DatabaseModified`です。
+`DatabaseModified`は生成された`Database`の`sketches.canvas_json`を、`FabricJSON`(`string | Record<string, unknown>`)に差し替えたものです。
+`FabricJSON`は、fabricの`loadFromJSON`の第1引数に基づきます。
 
 ## テーブル
 
