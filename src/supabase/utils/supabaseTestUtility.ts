@@ -18,7 +18,7 @@ const supabaseTestHelper = () => {
 
     if (role === "admin") key = processEnv.SUPABASE_LOCAL_ADMIN_KEY;
 
-    return createClient(processEnv.SUPABASE_LOCAL_URL, key, {
+    return createClient<DatabaseModified>(processEnv.SUPABASE_LOCAL_URL, key, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,

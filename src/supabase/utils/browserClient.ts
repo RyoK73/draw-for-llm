@@ -1,5 +1,6 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { envSchema } from "@/supabase/sketch-crud/handleDb.types";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 const createSupabaseBrowserClient = () => {
   const processEnv = envSchema.parse({
@@ -7,7 +8,7 @@ const createSupabaseBrowserClient = () => {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   });
 
-  return createBrowserClient(
+  return createBrowserClient<DatabaseModified>(
     processEnv.NEXT_PUBLIC_SUPABASE_URL,
     processEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );

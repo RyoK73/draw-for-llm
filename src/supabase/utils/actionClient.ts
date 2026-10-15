@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { envSchema } from "@/supabase/sketch-crud/handleDb.types";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 // For Server Actions only. Unlike `createSupabaseServerClient`, this client can write cookies,
 // so that a session created in the action (e.g. anonymous sign-in) is sent back in the response.
@@ -12,7 +13,7 @@ const createSupabaseActionClient = async () => {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   });
 
-  return createServerClient(
+  return createServerClient<DatabaseModified>(
     processEnv.NEXT_PUBLIC_SUPABASE_URL,
     processEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
