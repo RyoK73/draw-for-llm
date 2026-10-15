@@ -30,8 +30,9 @@ const supabaseTestHelper = () => {
   // The adminClient is used only for the auth admin API. The service_role has no privilege on the public tables.
   const adminClient = createTestClient("admin");
 
-  const createAnonClient = (): ReturnType<typeof createClient<DatabaseModified>> =>
-    createTestClient("anon");
+  const createAnonClient = (): ReturnType<
+    typeof createClient<DatabaseModified>
+  > => createTestClient("anon");
 
   const createTestUser = async (): Promise<Result<CreatedTestUser>> => {
     // Test files run in parallel, so Date.now() alone can collide.
