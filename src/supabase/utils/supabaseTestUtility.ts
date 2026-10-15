@@ -5,7 +5,7 @@ import {
 } from "@/supabase/utils/supabaseTestUtility.types";
 import { CreatedTestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import { Result } from "@/utils/utility.types";
-import { Database } from "@/supabase/utils/database.types";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 // helper function
 const supabaseTestHelper = () => {
@@ -13,7 +13,7 @@ const supabaseTestHelper = () => {
 
   const createTestClient = (
     role: "anon" | "admin" = "anon",
-  ): ReturnType<typeof createClient<Database>> => {
+  ): ReturnType<typeof createClient<DatabaseModified>> => {
     let key = processEnv.SUPABASE_LOCAL_ANON_KEY;
 
     if (role === "admin") key = processEnv.SUPABASE_LOCAL_ADMIN_KEY;
@@ -30,7 +30,7 @@ const supabaseTestHelper = () => {
   // The adminClient is used only for the auth admin API. The service_role has no privilege on the public tables.
   const adminClient = createTestClient("admin");
 
-  const createAnonClient = (): ReturnType<typeof createClient<Database>> =>
+  const createAnonClient = (): ReturnType<typeof createClient<DatabaseModified>> =>
     createTestClient("anon");
 
   const createTestUser = async (): Promise<Result<CreatedTestUser>> => {

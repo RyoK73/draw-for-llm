@@ -1,7 +1,7 @@
-import { Database } from "@/supabase/utils/database.types";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 type GetSketchList = Pick<
-  Database["public"]["Tables"]["sketches"]["Row"],
+  DatabaseModified["public"]["Tables"]["sketches"]["Row"],
   "id" | "title" | "description" | "created_at" | "updated_at"
 >[];
 

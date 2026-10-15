@@ -1,5 +1,5 @@
 import z from "zod";
-import { Database } from "@/supabase/utils/database.types";
+import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const testEnvSchema = z.object({
@@ -10,10 +10,10 @@ const testEnvSchema = z.object({
 
 type CreatedTestUser = {
   createdUserId: string;
-  authenticatedClient: ReturnType<typeof createClient<Database>>;
+  authenticatedClient: ReturnType<typeof createClient<DatabaseModified>>;
 };
 
-type TestUser = { client: SupabaseClient<Database>; userId: string };
+type TestUser = { client: SupabaseClient<DatabaseModified>; userId: string };
 
 export { testEnvSchema };
 export type { CreatedTestUser, TestUser };
