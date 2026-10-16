@@ -53,7 +53,9 @@ const useFabricCanvas = ({
       setLoadError(undefined);
       setIsLoaded(false);
     };
-  }, []); // First mount only
+    // Use the props of the first mount only. Another sketch (`/sketches/[id]`) mounts a new component, so the props do not change while it is mounted.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return { canvasElRef, fabricCanvasRef, isLoaded, loadError };
 };
