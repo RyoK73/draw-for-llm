@@ -81,7 +81,8 @@
 - `SketchDetail`は、`id`がuuidでない場合に`notFound()`を呼びます。
 - `createSupabaseServerClient`で作成したクライアントを`getSketch`(`src/supabase/sketch-crud/getSketch.ts`)に渡します。
 - `getSketch`はサーバー専用(`server-only`)です。
-  `id`、`title`、`description`、`width`、`height`、`created_at`、`updated_at`に加えて、キャンバスの復元に必要な`canvas_json`、`cell_size`、`frame_id`、`fabric_version`を取得します。
+  `id`、`title`、`description`、`width`、`height`、`created_at`、`updated_at`に加えて、キャンバスの復元に必要な`canvas_json`、`cell_size`、`frame_id`を取得します。
+  `fabric_version`も取得しますが、アプリでは使っていません。
 - RLSにより、存在しない`id`と他のユーザーの`id`は、どちらも`null`になります。
 
 | 状態                           | 表示                                                                                         |
