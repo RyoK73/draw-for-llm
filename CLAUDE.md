@@ -30,16 +30,16 @@ When you implement UI, read `DESIGN.md` and follow its colors, typography, spaci
 
 When you change code, update the corresponding documents in the same PR.
 
-| Change                                                | Documents to update                                                         |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| `package.json` scripts, required tools                | `docs/setup/prerequisites`, `docs/setup/development`, `docs/setup/database` |
-| Adding, changing, or removing environment variables   | `docs/setup/environment`                                                    |
-| `supabase/migrations/`, `supabase/seed.sql`           | `docs/architecture/database`, and `docs/setup/database` if necessary        |
-| Authentication (`src/supabase/auth/`, `src/proxy.ts`) | `docs/architecture/auth`                                                    |
-| Saving sketches (`src/save-sketch/`, `sketch-crud`)   | `docs/architecture/save`                                                    |
-| Routes, sketch list (`src/app/`, `src/sketch-list/`)  | `docs/architecture/routing`, and `docs/architecture/overview` if necessary  |
-| Directory structure, tech stack                       | `docs/architecture/overview`                                                |
-| Coding rules                                          | `docs/rules/`                                                               |
+| Change                                                     | Documents to update                                                         |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `package.json` scripts, required tools                     | `docs/setup/prerequisites`, `docs/setup/development`, `docs/setup/database` |
+| Adding, changing, or removing environment variables        | `docs/setup/environment`                                                    |
+| `supabase/migrations/`, `supabase/seed.sql`                | `docs/architecture/database`, and `docs/setup/database` if necessary        |
+| Authentication (`src/supabase/auth/`, `src/proxy.ts`)      | `docs/architecture/auth`                                                    |
+| Saving sketches (`src/sketch-detail/save/`, `sketch-crud`) | `docs/architecture/save`                                                    |
+| Routes, sketch list (`src/app/`, `src/sketch-list/`)       | `docs/architecture/routing`, and `docs/architecture/overview` if necessary  |
+| Directory structure, tech stack                            | `docs/architecture/overview`                                                |
+| Coding rules                                               | `docs/rules/`                                                               |
 
 - Always update both the Japanese and English versions in the same PR. Keep the heading structure aligned.
 - When you add, remove, or rename a document, also update the index in this file and the links in the README.
