@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import * as fabric from "fabric";
+import { FabricJSON } from "@/supabase/utils/modifiedDatabase.types";
 
 type FabricCanvas = {
   width: number;
   height: number;
   backgroundColor: string;
-  canvasJson: Record<string, unknown>;
+  canvasJson: FabricJSON;
 };
 
 const useFabricCanvas = ({
