@@ -81,12 +81,12 @@ See [Overview](./overview.en.md) for the components.
 - `SketchDetail` calls `notFound()` when `id` is not a uuid.
 - It passes a client made by `createSupabaseServerClient` to `getSketch` (`src/supabase/sketch-crud/getSketch.ts`).
 - `getSketch` is server only (`server-only`).
-  It gets `id`, `title`, `description`, `width`, `height`, `created_at` and `updated_at`.
-  It does not get `canvas_json`.
+  It gets `id`, `title`, `description`, `width`, `height`, `created_at` and `updated_at`, and also `canvas_json`, `cell_size` and `frame_id`, which are needed to restore the canvas.
+  It also gets `fabric_version`, but the app does not use it.
 - By the RLS, both a nonexistent `id` and an `id` of another user give `null`.
 
-| State                         | Display                                                                                 |
-| ----------------------------- | --------------------------------------------------------------------------------------- |
-| `id` is not a uuid, or `null` | `notFound()`. `not-found.tsx` shows "スケッチが見つかりません。" and a link to the list |
-| Error                         | "スケッチの取得に失敗しました。" with `role="alert"`                                    |
-| Success                       | Shows `title`, `description` (if any), `width × height` and the updated time            |
+| State                         | Display                                                                                      |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| `id` is not a uuid, or `null` | `notFound()`. `not-found.tsx` shows "スケッチが見つかりません。" and a link to the list      |
+| Error                         | "スケッチの取得に失敗しました。" with `role="alert"`                                         |
+| Success                       | Shows `title`, `description` (if any), `width × height`, the updated time and `SketchCanvas` |

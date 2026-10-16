@@ -81,12 +81,12 @@
 - `SketchDetail`は、`id`がuuidでない場合に`notFound()`を呼びます。
 - `createSupabaseServerClient`で作成したクライアントを`getSketch`(`src/supabase/sketch-crud/getSketch.ts`)に渡します。
 - `getSketch`はサーバー専用(`server-only`)です。
-  `id`、`title`、`description`、`width`、`height`、`created_at`、`updated_at`を取得します。
-  `canvas_json`は取得しません。
+  `id`、`title`、`description`、`width`、`height`、`created_at`、`updated_at`に加えて、キャンバスの復元に必要な`canvas_json`、`cell_size`、`frame_id`を取得します。
+  `fabric_version`も取得しますが、アプリでは使っていません。
 - RLSにより、存在しない`id`と他のユーザーの`id`は、どちらも`null`になります。
 
-| 状態                           | 表示                                                                                        |
-| ------------------------------ | ------------------------------------------------------------------------------------------- |
-| `id`がuuidでない、または`null` | `notFound()`。`not-found.tsx`が「スケッチが見つかりません。」と一覧へのリンクを表示します。 |
-| 取得失敗                       | `role="alert"`の「スケッチの取得に失敗しました。」                                          |
-| 取得成功                       | `title`、`description`(ある場合)、`width × height`、更新日時を表示します。                  |
+| 状態                           | 表示                                                                                         |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| `id`がuuidでない、または`null` | `notFound()`。`not-found.tsx`が「スケッチが見つかりません。」と一覧へのリンクを表示します。  |
+| 取得失敗                       | `role="alert"`の「スケッチの取得に失敗しました。」                                           |
+| 取得成功                       | `title`、`description`(ある場合)、`width × height`、更新日時と、`SketchCanvas`を表示します。 |

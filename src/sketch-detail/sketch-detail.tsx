@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
 import { getSketch } from "@/supabase/sketch-crud/getSketch";
 import { LocalTime } from "@/design-system/local-time";
+import { SketchCanvas } from "@/sketch-detail/sketch-canvas";
 
 const SketchDetail = async ({ id }: { id: string }) => {
   if (!z.uuid().safeParse(id).success) notFound();
@@ -35,6 +36,7 @@ const SketchDetail = async ({ id }: { id: string }) => {
         {sketch.width} × {sketch.height}
       </p>
       {sketch.updated_at ? <LocalTime updatedAt={sketch.updated_at} /> : null}
+      <SketchCanvas sketch={sketch} />
     </div>
   );
 };

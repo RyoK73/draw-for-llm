@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { notFound } from "next/navigation";
 import { SketchDetail } from "@/sketch-detail/sketch-detail";
+import { SketchCanvas } from "@/sketch-detail/sketch-canvas";
 import { getSketch } from "@/supabase/sketch-crud/getSketch";
 import { createSupabaseServerClient } from "@/supabase/utils/serverClient";
 import { dateTimeTestHelper } from "@/sketch-list/testUtility";
@@ -17,6 +18,9 @@ vi.mock("@/supabase/utils/serverClient", () => ({
   createSupabaseServerClient: vi.fn(),
 }));
 vi.mock("@/supabase/sketch-crud/getSketch", () => ({ getSketch: vi.fn() }));
+vi.mock("@/sketch-detail/sketch-canvas", () => ({
+  SketchCanvas: vi.fn(() => <div data-testid="sketch-canvas" />),
+}));
 
 describe("SketchDetail", () => {
   beforeEach(() => {
@@ -37,6 +41,10 @@ describe("SketchDetail", () => {
         height: 1080,
         created_at: "2026-10-01T00:00:00Z",
         updated_at: "2026-10-02T00:00:00Z",
+        canvas_json: {},
+        cell_size: 32,
+        frame_id: null,
+        fabric_version: "7.4.0",
       },
     });
 
@@ -50,6 +58,28 @@ describe("SketchDetail", () => {
     ).toBeInTheDocument();
   });
 
+  test("should pass the fetched sketch to SketchCanvas", async () => {
+    const sketch = {
+      id: validId,
+      title: "my sketch",
+      description: null,
+      width: 1920,
+      height: 1080,
+      created_at: "2026-10-01T00:00:00Z",
+      updated_at: "2026-10-02T00:00:00Z",
+      canvas_json: { objects: [] },
+      cell_size: 32,
+      frame_id: null,
+      fabric_version: "7.4.0",
+    };
+    vi.mocked(getSketch).mockResolvedValue({ ok: true, value: sketch });
+
+    render(await SketchDetail({ id: validId }));
+
+    expect(screen.getByTestId("sketch-canvas")).toBeInTheDocument();
+    expect(vi.mocked(SketchCanvas).mock.calls[0][0]).toEqual({ sketch });
+  });
+
   test("should call notFound without fetching when the id is not a uuid", async () => {
     await expect(SketchDetail({ id: "not-a-uuid" })).rejects.toThrow(
       "NEXT_NOT_FOUND",
@@ -59,7 +89,7 @@ describe("SketchDetail", () => {
     expect(getSketch).not.toHaveBeenCalled();
   });
 
-  test("should call notFound when the sketch is not visible", async () => {
+  test("should call notFound when getSketch returns null", async () => {
     vi.mocked(getSketch).mockResolvedValue({ ok: true, value: null });
 
     await expect(SketchDetail({ id: validId })).rejects.toThrow(

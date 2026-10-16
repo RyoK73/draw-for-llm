@@ -3,7 +3,7 @@
 ## 流れ
 
 ```
-fabric "object:modified"
+fabric "object:added" / "object:modified"(読み込み完了後)
   -> useSave (250msのdebounce)
   -> saveToDb
   -> upsertSketch (ブラウザのSupabaseクライアント)
@@ -12,19 +12,22 @@ fabric "object:modified"
 
 ## ファイル
 
-| ファイル                               | 役割                                                          |
-| -------------------------------------- | ------------------------------------------------------------- |
-| `src/save-sketch/useSave.ts`           | 自動保存がオンのとき、`object:modified`で保存するフックです。 |
-| `src/save-sketch/saveToDb.ts`          | キャンバスから行を組み立て、`upsertSketch`を呼びます。        |
-| `src/supabase/sketch-crud/handleDb.ts` | `insertSketch`、`upsertSketch`                                |
+| ファイル                               | 役割                                                                          |
+| -------------------------------------- | ----------------------------------------------------------------------------- |
+| `src/sketch-detail/save/useSave.ts`    | 自動保存がオンのとき、`object:added`と`object:modified`で保存するフックです。 |
+| `src/sketch-detail/save/saveToDb.ts`   | キャンバスから行を組み立て、`upsertSketch`を呼びます。                        |
+| `src/supabase/sketch-crud/handleDb.ts` | `insertSketch`、`upsertSketch`                                                |
 
 ## 詳細
 
 - `useSave`
   - debounceの待ち時間(`SAVE_DELAY`)は250msで、`p-debounce`を使います。
   - 自動保存(`isAutoSave`)は、デフォルトでオンです。
+  - 第4引数の`isSketchLoaded`が`true`になるまで、イベントを購読しません。
+    読み込み中の`loadFromJSON`が、オブジェクトごとに`object:added`を発火するためです。
+    開いただけで保存されることを防ぎます。
   - 最初の保存で返ったidを`sketchIdRef`に保持し、以降は同じ行をupsertします。
-  - `sketchInfoRef`か`frameRef`が未設定の場合は、保存せずに`err`を設定します。
+  - `fabricCanvasRef`、`sketchInfoRef`、`frameRef`のいずれかが未設定の場合は、保存せずに`err`を設定します。
 - `saveToDb`
   - ブラウザのSupabaseクライアントを作成し、`upsertSketch`に渡します。
   - キャンバスのJSON(`canvas.toJSON()`)とfabricのバージョンを取得します。

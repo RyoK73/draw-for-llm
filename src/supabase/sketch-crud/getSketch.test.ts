@@ -21,12 +21,16 @@ afterEach(async () => {
 });
 
 describe("getSketch", () => {
-  test("should return the own sketch without canvas_json", async () => {
+  test("should return the own sketch with the columns to restore the canvas", async () => {
+    const canvasJson = { version: "7.4.0", objects: [] };
     const sketch = await insertSketchOrThrow(firstUser, {
       title: "mine",
       description: "my description",
       width: 800,
       height: 600,
+      canvas_json: canvasJson,
+      cell_size: 16,
+      fabric_version: "7.4.0",
     });
 
     const getResult = await getSketch(firstUser.client, sketch.id);
@@ -39,8 +43,11 @@ describe("getSketch", () => {
       description: "my description",
       width: 800,
       height: 600,
+      canvas_json: canvasJson,
+      cell_size: 16,
+      frame_id: sketch.frame_id,
+      fabric_version: "7.4.0",
     });
-    expect(getResult.value).not.toHaveProperty("canvas_json");
   });
 
   test("should return null for another user's sketch", async () => {

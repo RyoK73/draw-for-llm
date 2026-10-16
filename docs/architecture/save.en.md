@@ -3,7 +3,7 @@
 ## Flow
 
 ```
-fabric "object:modified"
+fabric "object:added" / "object:modified" (after loading)
   -> useSave (debounce 250 ms)
   -> saveToDb
   -> upsertSketch (browser Supabase client)
@@ -12,19 +12,22 @@ fabric "object:modified"
 
 ## Files
 
-| File                                   | Role                                                      |
-| -------------------------------------- | --------------------------------------------------------- |
-| `src/save-sketch/useSave.ts`           | Hook that saves on `object:modified` when auto-save is on |
-| `src/save-sketch/saveToDb.ts`          | Builds the row from the canvas and calls `upsertSketch`   |
-| `src/supabase/sketch-crud/handleDb.ts` | `insertSketch`, `upsertSketch`                            |
+| File                                   | Role                                                                         |
+| -------------------------------------- | ---------------------------------------------------------------------------- |
+| `src/sketch-detail/save/useSave.ts`    | Hook that saves on `object:added` and `object:modified` when auto-save is on |
+| `src/sketch-detail/save/saveToDb.ts`   | Builds the row from the canvas and calls `upsertSketch`                      |
+| `src/supabase/sketch-crud/handleDb.ts` | `insertSketch`, `upsertSketch`                                               |
 
 ## Details
 
 - `useSave`
   - The debounce delay (`SAVE_DELAY`) is 250 ms and uses `p-debounce`.
   - Auto-save (`isAutoSave`) is on by default.
+  - It does not subscribe to the events until the fourth argument `isSketchLoaded` becomes `true`.
+    This is because `loadFromJSON` fires `object:added` for each object while loading.
+    It keeps a sketch from being saved just by opening it.
   - The id returned by the first save is kept in `sketchIdRef`, and later saves upsert the same row.
-  - If `sketchInfoRef` or `frameRef` is not set, it sets `err` instead of saving.
+  - If any of `fabricCanvasRef`, `sketchInfoRef` and `frameRef` is not set, it sets `err` instead of saving.
 - `saveToDb`
   - Creates a browser Supabase client and passes it to `upsertSketch`.
   - Takes the canvas JSON (`canvas.toJSON()`) and the fabric version.

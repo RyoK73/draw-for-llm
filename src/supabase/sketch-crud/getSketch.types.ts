@@ -9,6 +9,10 @@ type GetSketch = Pick<
   | "height"
   | "created_at"
   | "updated_at"
+  | "canvas_json"
+  | "cell_size"
+  | "frame_id"
+  | "fabric_version"
 >;
 
 export type { GetSketch };

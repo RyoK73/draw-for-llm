@@ -1,22 +1,29 @@
 import * as fabric from "fabric";
-import { useRef, useState, useEffect, RefObject } from "react";
-import { saveToDb } from "@/save-sketch/saveToDb";
-import { SketchInfo, CanvasFrame } from "@/save-sketch/saveToDb.types";
+import { useRef, useState, useEffect, RefObject, useCallback } from "react";
+import { saveToDb } from "@/sketch-detail/save/saveToDb";
+import { SketchInfo, CanvasFrame } from "@/sketch-detail/save/saveToDb.types";
 import pDebounce from "p-debounce";
 
 const SAVE_DELAY: number = 250;
 
+// `isSketchLoaded` is false while the canvas loads a sketch. Nothing is saved until it turns to true,
+// because loading adds the objects and fires `object:added` for each of them.
 const useSave = (
-  fabricCanvasRef: RefObject<fabric.Canvas>,
+  fabricCanvasRef: RefObject<fabric.Canvas | null>,
   sketchIdRef: RefObject<string | undefined>,
   frameRef: RefObject<CanvasFrame | null>,
+  isSketchLoaded: boolean,
 ) => {
   const [isAutoSave, setAutoSave] = useState(true);
   const sketchInfoRef = useRef<SketchInfo>(null);
   const [err, setErr] = useState<Error>();
   const debounceSaveToDb = pDebounce(saveToDb, SAVE_DELAY);
 
-  const save = async () => {
+  const save = useCallback(async () => {
+    if (fabricCanvasRef.current === null) {
+      setErr(new Error("Error: fabricCanvasRef is null."));
+      return;
+    }
     if (sketchInfoRef.current === null) {
       setErr(new Error("Error: sketchInfoRef is null."));
       return;
@@ -39,19 +46,24 @@ const useSave = (
 
     sketchIdRef.current = saveResult.value.id;
     setErr(undefined);
-  };
+  }, [fabricCanvasRef, sketchIdRef, frameRef, debounceSaveToDb]);
 
   useEffect(() => {
+    const canvas = fabricCanvasRef.current;
+    if (!isSketchLoaded || !canvas) return;
+
     const handler = () => {
       if (!isAutoSave) return;
       save();
     };
-    fabricCanvasRef.current.on("object:modified", handler);
+    canvas.on("object:added", handler);
+    canvas.on("object:modified", handler);
 
     return () => {
-      fabricCanvasRef.current.off("object:modified", handler);
+      canvas.off("object:added", handler);
+      canvas.off("object:modified", handler);
     };
-  }, [sketchInfoRef, fabricCanvasRef, isAutoSave]);
+  }, [sketchInfoRef, fabricCanvasRef, isAutoSave, isSketchLoaded, save]);
 
   return { isAutoSave, setAutoSave, sketchInfoRef, err, save };
 };
