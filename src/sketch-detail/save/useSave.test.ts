@@ -355,5 +355,26 @@ describe("useSave", () => {
 
       expect(result.current.err?.message).toEqual("Error: frameRef is null.");
     });
+    it("should return error and not call saveToDb when fabricCanvasRef is null", async () => {
+      const nullCanvasRef = { current: null };
+      const { result } = renderHook(() =>
+        useSave(nullCanvasRef, canvasIdTestRef, frameTestRef, true),
+      );
+
+      act(() => {
+        result.current.sketchInfoRef.current = {
+          title: "test title",
+        };
+      });
+
+      await act(async () => {
+        await result.current.save();
+      });
+
+      expect(saveToDb).not.toHaveBeenCalled();
+      expect(result.current.err?.message).toEqual(
+        "Error: fabricCanvasRef is null.",
+      );
+    });
   });
 });

@@ -7,7 +7,7 @@ import pDebounce from "p-debounce";
 const SAVE_DELAY: number = 250;
 
 const useSave = (
-  fabricCanvasRef: RefObject<fabric.Canvas>,
+  fabricCanvasRef: RefObject<fabric.Canvas | null>,
   sketchIdRef: RefObject<string | undefined>,
   frameRef: RefObject<CanvasFrame | null>,
 ) => {
@@ -17,6 +17,10 @@ const useSave = (
   const debounceSaveToDb = pDebounce(saveToDb, SAVE_DELAY);
 
   const save = async () => {
+    if (fabricCanvasRef.current === null) {
+      setErr(new Error("Error: fabricCanvasRef is null."));
+      return;
+    }
     if (sketchInfoRef.current === null) {
       setErr(new Error("Error: sketchInfoRef is null."));
       return;
