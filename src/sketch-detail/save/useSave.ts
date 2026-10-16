@@ -6,10 +6,13 @@ import pDebounce from "p-debounce";
 
 const SAVE_DELAY: number = 250;
 
+// `isSketchLoaded` is false while the canvas loads a sketch. Nothing is saved until it turns to true,
+// because loading adds the objects and fires `object:added` for each of them.
 const useSave = (
   fabricCanvasRef: RefObject<fabric.Canvas | null>,
   sketchIdRef: RefObject<string | undefined>,
   frameRef: RefObject<CanvasFrame | null>,
+  isSketchLoaded: boolean,
 ) => {
   const [isAutoSave, setAutoSave] = useState(true);
   const sketchInfoRef = useRef<SketchInfo>(null);
@@ -46,16 +49,21 @@ const useSave = (
   };
 
   useEffect(() => {
+    const canvas = fabricCanvasRef.current;
+    if (!isSketchLoaded || !canvas) return;
+
     const handler = () => {
       if (!isAutoSave) return;
       save();
     };
-    fabricCanvasRef.current.on("object:modified", handler);
+    canvas.on("object:added", handler);
+    canvas.on("object:modified", handler);
 
     return () => {
-      fabricCanvasRef.current.off("object:modified", handler);
+      canvas.off("object:added", handler);
+      canvas.off("object:modified", handler);
     };
-  }, [sketchInfoRef, fabricCanvasRef, isAutoSave]);
+  }, [sketchInfoRef, fabricCanvasRef, isAutoSave, isSketchLoaded]);
 
   return { isAutoSave, setAutoSave, sketchInfoRef, err, save };
 };
