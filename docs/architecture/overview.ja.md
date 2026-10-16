@@ -12,6 +12,8 @@
 | テスト         | vitest、Testing Library    |
 
 正確なバージョンは`package.json`を参照してください。
+fabric.jsだけは、`^`を付けずにバージョンを固定しています。
+保存時には、その時点のバージョンを`fabric_version`としてDBに記録します。
 
 ## ディレクトリ構成
 
@@ -22,12 +24,10 @@
 | -------------------- | --------------------------------------------------------------------- |
 | `src/app/`           | ルーティング専用                                                      |
 | `src/proxy.ts`       | Next.jsのproxy。リクエストごとに認証セッションを更新します。          |
-| `src/draw/`          | fabric.jsによるキャンバス、図形、undo/redo履歴                        |
-| `src/save-sketch/`   | スケッチのDBへの保存                                                  |
 | `src/auth-form/`     | サインインとゲスト登録のフォーム                                      |
 | `src/landing-page/`  | ランディングページの表示(認証状態ごとのボタン)                        |
 | `src/new-sketch/`    | スケッチの新規作成(ボタンとServer Action)                             |
-| `src/sketch-detail/` | スケッチの個別ページの表示                                            |
+| `src/sketch-detail/` | スケッチの個別ページ(表示、描画、DBへの保存)                          |
 | `src/sketch-list/`   | スケッチ一覧の表示(Server ComponentとClient Component)                |
 | `src/design-system/` | 汎用UI部品(shadcn/ui由来のボタン、入力欄、ラベル、toast、`LocalTime`) |
 | `src/supabase/`      | Supabaseのクライアント、認証、CRUD、DBテスト                          |
@@ -35,13 +35,23 @@
 | `src/dev-scripts/`   | 開発用スクリプト                                                      |
 | `src/test/`          | テスト用のヘルパー                                                    |
 
-## 描画(`src/draw/`)
+## 描画(`src/sketch-detail/draw/`)
 
-| ファイル             | 役割                                                                       |
-| -------------------- | -------------------------------------------------------------------------- |
-| `useFabricCanvas.ts` | マウント時にfabricのキャンバスを作成し、アンマウント時に破棄します。       |
-| `useShapes.ts`       | 四角形、円、三角形をキャンバスの中央に追加します。                         |
-| `useHistory.ts`      | `past` / `present` / `future`を保持し、`set`、`undo`、`redo`を提供します。 |
+| ファイル             | 役割                                                                             |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `useFabricCanvas.ts` | fabricのキャンバスを作成して`canvasJson`を読み込み、アンマウント時に破棄します。 |
+| `useShapes.ts`       | 四角形、円、三角形をキャンバスの中央に追加します。                               |
+| `useHistory.ts`      | `past` / `present` / `future`を保持し、`set`、`undo`、`redo`を提供します。       |
+
+
+`useFabricCanvas`の詳細は、次の通りです。
+
+- `loadFromJSON`は`AbortController`の`signal`を受け取り、アンマウント時に中断します。
+- 読み込みが完了すると、`isLoaded`が`true`になります。
+  読み込みに失敗すると、`isLoaded`は`false`のまま、`loadError`にエラーが入ります。
+- `loadFromJSON`はキャンバスの背景色を消すので、読み込み後にJSONが`background`を持たない場合だけ、`backgroundColor`を設定し直します。
+- fabricはcanvas要素を自前のラッパーで包みます。
+  そのため、canvas要素の親要素は、Reactが管理する要素(`div`など)にします。
 
 ## スケッチ一覧(`src/sketch-list/`)
 
@@ -91,10 +101,23 @@
 
 ## スケッチの個別ページ(`src/sketch-detail/`)
 
-| ファイル            | 役割                                                     |
-| ------------------- | -------------------------------------------------------- |
-| `sketch-detail.tsx` | Server Component。`getSketch`で取得した1件を描画します。 |
-| `index.ts`          | 公開するのは`SketchDetail`のみです。                     |
+| ファイル            | 役割                                                                                     |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| `sketch-detail.tsx` | Server Component。`getSketch`で取得した1件のメタ情報を描画し、`SketchCanvas`に渡します。 |
+| `sketch-canvas.tsx` | Client Component。キャンバス、図形の追加ボタン、自動保存を担当します。                   |
+| `draw/`             | fabricのキャンバスに関するフック(前節を参照)                                             |
+| `save/`             | DBへの保存に関するフックと関数([スケッチの保存](./save.ja.md)を参照)                     |
+| `index.ts`          | 公開するのは`SketchDetail`のみです。                                                     |
+
+`SketchCanvas`の詳細は、次の通りです。
+
+- キャンバスは実寸(`width` × `height`)で描画し、親要素をスクロールさせます。
+- 図形の追加ボタンは、`isSketchLoaded`が`true`になるまで無効です。
+- 保存に失敗すると、固定の文言をtoast(`id`は固定)で表示します。
+  同じ`id`のtoastは、重ねずに更新されます。
+- 読み込みに失敗した場合、または`canvas_json`がオブジェクトでない場合は、キャンバスとボタンを表示しません。
+  `role="alert"`の文言と、一覧へのリンクを表示します。
+  自動保存が、読み込めなかった内容を上書きするのを防ぐためです。
 
 ## 次のステップ
 

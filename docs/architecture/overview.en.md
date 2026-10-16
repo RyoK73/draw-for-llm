@@ -12,6 +12,8 @@
 | Test       | vitest, Testing Library     |
 
 Exact versions are in `package.json`.
+Only fabric.js is pinned to an exact version, without `^`.
+On saving, the version at that time is recorded in the DB as `fabric_version`.
 
 ## Directory structure
 
@@ -22,12 +24,10 @@ See [Directory structure](../rules/directory-structure.en.md) for the rule.
 | -------------------- | ----------------------------------------------------------------------------- |
 | `src/app/`           | Routing only                                                                  |
 | `src/proxy.ts`       | Next.js proxy. Refreshes the auth session on each request                     |
-| `src/draw/`          | Canvas, shapes and undo/redo history built on fabric.js                       |
-| `src/save-sketch/`   | Saving a sketch to the DB                                                     |
 | `src/auth-form/`     | The form for sign-in and guest registration                                   |
 | `src/landing-page/`  | Showing the landing page (buttons by auth state)                              |
 | `src/new-sketch/`    | Creating a sketch (button and Server Action)                                  |
-| `src/sketch-detail/` | Showing the sketch page                                                       |
+| `src/sketch-detail/` | The sketch page (showing, drawing and saving to the DB)                       |
 | `src/design-system/` | Generic UI parts (button, input, label and toast from shadcn/ui, `LocalTime`) |
 | `src/sketch-list/`   | Showing the sketch list (Server and Client Components)                        |
 | `src/supabase/`      | Supabase clients, auth, CRUD and DB tests                                     |
@@ -35,13 +35,22 @@ See [Directory structure](../rules/directory-structure.en.md) for the rule.
 | `src/dev-scripts/`   | Scripts for development                                                       |
 | `src/test/`          | Pure helpers for tests                                                        |
 
-## Drawing (`src/draw/`)
+## Drawing (`src/sketch-detail/draw/`)
 
 | File                 | Role                                                                      |
 | -------------------- | ------------------------------------------------------------------------- |
-| `useFabricCanvas.ts` | Creates a fabric canvas on mount and disposes it on unmount               |
+| `useFabricCanvas.ts` | Creates a fabric canvas, loads `canvasJson` and disposes it on unmount    |
 | `useShapes.ts`       | Adds a rect, circle or triangle to the center of the canvas               |
 | `useHistory.ts`      | Keeps `past` / `present` / `future` and provides `set`, `undo` and `redo` |
+
+Details of `useFabricCanvas`:
+
+- `loadFromJSON` receives the `signal` of an `AbortController`, and it is aborted on unmount.
+- When the loading finishes, `isLoaded` becomes `true`.
+  When the loading fails, `isLoaded` stays `false` and the error is set in `loadError`.
+- `loadFromJSON` clears the background color of the canvas, so after loading it sets `backgroundColor` again only when the JSON has no `background`.
+- fabric wraps the canvas element in its own wrapper.
+  So the parent element of the canvas element is an element managed by React (such as a `div`).
 
 ## Sketch list (`src/sketch-list/`)
 
@@ -92,10 +101,23 @@ See [Authentication](./auth.en.md) for details.
 
 ## Sketch page (`src/sketch-detail/`)
 
-| File                | Role                                                    |
-| ------------------- | ------------------------------------------------------- |
-| `sketch-detail.tsx` | Server Component. Renders one sketch got by `getSketch` |
-| `index.ts`          | Exports only `SketchDetail`                             |
+| File                | Role                                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| `sketch-detail.tsx` | Server Component. Renders the info of one sketch got by `getSketch` and passes it to `SketchCanvas` |
+| `sketch-canvas.tsx` | Client Component. Handles the canvas, the buttons to add shapes and auto-save                       |
+| `draw/`             | Hooks for the fabric canvas (see the section above)                                                 |
+| `save/`             | Hooks and functions for saving to the DB (see [Saving sketches](./save.en.md))                      |
+| `index.ts`          | Exports only `SketchDetail`                                                                         |
+
+Details of `SketchCanvas`:
+
+- It draws the canvas at actual size (`width` × `height`) and the parent element scrolls.
+- The buttons to add shapes are disabled until `isSketchLoaded` becomes `true`.
+- When saving fails, it shows a fixed message as a toast with a fixed `id`.
+  A toast with the same `id` is updated instead of stacking.
+- When the loading fails, or `canvas_json` is not an object, it shows neither the canvas nor the buttons.
+  It shows a message with `role="alert"` and a link to the list.
+  This keeps auto-save from overwriting the content that could not be loaded.
 
 ## Next
 
