@@ -109,6 +109,29 @@ export { LoginForm } from "./login-form";
 > 検討中: ESLintルール(例: `eslint-plugin-boundaries`)などで、
 > `index.ts` を経由しないdeep importを機械的に禁止する
 
+## verticalの内部は、責務ごとのサブディレクトリに分けてよい
+
+- 1つのverticalのファイルが増えたら、`src/{vertical名}/`の中を、責務ごとのサブディレクトリに分けてよい。
+- 分ける基準は、技術的な種類(`hooks/`、`components/`など)ではなく、責務(`draw/`、`save/`など)とする。
+- サブディレクトリの中のファイルは、同じvertical内からのみ使う。
+  外部への公開は、vertical直下の`index.ts`だけで行う。
+
+### Example
+
+```bash
+src/
+├── sketch-detail/          # スケッチの個別ページ
+│   ├── sketch-detail.tsx
+│   ├── sketch-canvas.tsx
+│   ├── draw/               # キャンバスの描画に関するフック
+│   │   ├── useFabricCanvas.ts
+│   │   └── useShapes.ts
+│   ├── save/               # DBへの保存に関するフックと関数
+│   │   ├── useSave.ts
+│   │   └── saveToDb.ts
+│   └── index.ts            # 外部公開インターフェース
+```
+
 ## 判断フローチャート(コンポーネントをどこに置くか迷った時)
 
 1. **ロジックを持たない、見た目だけの汎用UI部品か？**

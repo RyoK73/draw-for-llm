@@ -109,6 +109,29 @@ export { LoginForm } from "./login-form";
 > Under consideration: mechanically forbidding deep imports that bypass `index.ts`,
 > e.g. via an ESLint rule (such as `eslint-plugin-boundaries`)
 
+## A Vertical May Be Divided into Subdirectories by Responsibility
+
+- When a vertical gets many files, you may divide `src/{vertical name}/` into subdirectories by responsibility.
+- Divide by responsibility (such as `draw/` and `save/`), not by technical kind (such as `hooks/` and `components/`).
+- Files in a subdirectory are used only from the same vertical.
+  Publish them to the outside only through the `index.ts` directly under the vertical.
+
+### Example
+
+```bash
+src/
+├── sketch-detail/          # The sketch page
+│   ├── sketch-detail.tsx
+│   ├── sketch-canvas.tsx
+│   ├── draw/               # Hooks for drawing on the canvas
+│   │   ├── useFabricCanvas.ts
+│   │   └── useShapes.ts
+│   ├── save/               # Hooks and functions for saving to the DB
+│   │   ├── useSave.ts
+│   │   └── saveToDb.ts
+│   └── index.ts            # Public interface
+```
+
 ## Decision Flowchart (When Unsure Where to Place a Component)
 
 1. **Is it a generic UI part with no logic, purely presentational?**
