@@ -1,15 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
-import {
-  testEnvSchema,
-  TestUser,
-} from "@/supabase/utils/supabaseTestUtility.types";
+import { TestUser } from "@/supabase/utils/supabaseTestUtility.types";
+import { parseSupabaseLocalEnv } from "@/supabase/utils/env";
 import { CreatedTestUser } from "@/supabase/utils/supabaseTestUtility.types";
 import { Result } from "@/utils/utility.types";
 import { DatabaseModified } from "@/supabase/utils/modifiedDatabase.types";
 
 // helper function
 const supabaseTestHelper = () => {
-  const processEnv = testEnvSchema.parse(process.env);
+  const processEnv = parseSupabaseLocalEnv();
 
   const createTestClient = (
     role: "anon" | "admin" = "anon",
