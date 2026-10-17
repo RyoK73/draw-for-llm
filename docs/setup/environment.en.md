@@ -20,7 +20,7 @@
 | `PROJECTID`                     | `pnpm type:gen`, `pnpm test:remote`      | Project ID of the remote Supabase            |
 | `SUPABASE_ACCESS_TOKEN`         | `pnpm test:remote`                       | Access token for the Supabase Management API |
 
-- The app validates `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` with zod (`src/supabase/sketch-crud/handleDb.types.ts`).
+- The app validates `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` with zod (`src/supabase/utils/env.ts`).
 - The local values are printed by `pnpm db:status` after `pnpm db:start`.
 - Never commit real values.
 

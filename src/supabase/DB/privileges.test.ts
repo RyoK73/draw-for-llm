@@ -1,6 +1,7 @@
+import { parseSupabaseLocalEnv } from "@/supabase/utils/env";
 import { Client } from "pg";
 
-const DATABASE_URL = process.env.SUPABASE_LOCAL_DB_URL;
+const DATABASE_URL = parseSupabaseLocalEnv().SUPABASE_LOCAL_DB_URL;
 
 const client = new Client({ connectionString: DATABASE_URL });
 
