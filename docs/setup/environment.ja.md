@@ -21,7 +21,7 @@
 | `PROJECTID`                     | `pnpm type:gen`、`pnpm test:remote` | リモートSupabaseのプロジェクトID          |
 | `SUPABASE_ACCESS_TOKEN`         | `pnpm test:remote`                  | Supabase Management APIのアクセストークン |
 
-- アプリは`NEXT_PUBLIC_SUPABASE_URL`と`NEXT_PUBLIC_SUPABASE_ANON_KEY`をzodで検証します(`src/supabase/sketch-crud/handleDb.types.ts`)。
+- アプリは`NEXT_PUBLIC_SUPABASE_URL`と`NEXT_PUBLIC_SUPABASE_ANON_KEY`をzodで検証します(`src/supabase/utils/env.ts`)。
 - ローカル用の値は、`pnpm db:start`の後に`pnpm db:status`で確認できます。
 - 実際の値は絶対にコミットしないでください。
 
